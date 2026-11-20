@@ -1,0 +1,2194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f7fa">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Воркбук 04">
+<title>AI-монтаж — воркбук 04</title>
+<meta name="description" content="Воркбук 04 · Нейропедалирование: рабочее место, сториборд, монтаж и правки ролика через Claude Code, скиллы и промпты.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Caveat:wght@700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7fa;
+  --paper:#ffffff;
+  --ink:#0c0c10;
+  --ink-2:#4d4d58;
+  --ink-3:#9898a4;
+  --line:rgba(12,12,16,.07);
+  --pink:#ff2e97;
+  --pink-2:#ff7cc2;
+  --pink-soft:#ffe3f1;
+  --blue:#1e9bff;
+  --blue-2:#8ed2ff;
+  --blue-soft:#e2f3ff;
+  --code:#fbfbfd;
+  --glass:rgba(255,255,255,.72);
+  --shadow:0 1px 2px rgba(20,20,40,.04),0 14px 36px rgba(40,30,80,.08);
+  --r:28px;
+  --px:Manrope,system-ui,sans-serif;
+  --pixel:"Press Start 2P",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{
+  font-family:Manrope,system-ui,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-color:var(--bg);
+  background-image:radial-gradient(rgba(12,12,16,.16) 1.1px,transparent 1.3px);
+  background-size:24px 24px;
+}
+a{color:inherit}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+svg.i{width:1em;height:1em;display:inline-block;vertical-align:-.12em}
+
+/* ===== glossy primitives ===== */
+.gpill{
+  display:inline-flex;align-items:center;gap:8px;font:800 14px var(--px);letter-spacing:.04em;text-transform:uppercase;color:#fff;
+  padding:9px 22px;border-radius:999px;border:2px solid rgba(255,255,255,.9);
+  background:linear-gradient(180deg,#ff9fd2 0%,#ff3f9f 55%,#f0167f 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.65),inset 0 -4px 8px rgba(150,0,70,.3),0 0 0 3px rgba(255,46,151,.25),0 10px 24px rgba(255,46,151,.35);
+}
+.gpill.blue{background:linear-gradient(180deg,#a8ddff 0%,#3aa9ff 55%,#1488ee 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.65),inset 0 -4px 8px rgba(0,60,150,.3),0 0 0 3px rgba(30,155,255,.22),0 10px 24px rgba(30,155,255,.3)}
+.key{
+  position:relative;display:grid;place-items:center;border-radius:22px;
+  background:linear-gradient(160deg,#ffffff 0%,#f3f3f7 100%);
+  box-shadow:inset 0 2px 0 #fff,inset 0 -5px 0 rgba(12,12,16,.06),0 2px 3px rgba(0,0,0,.05),0 16px 30px rgba(40,30,80,.14);
+}
+.bubble{
+  position:absolute;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 32% 28%,#fff 0 9%,#ffb6dc 22%,#ff3f9f 62%,#d10b6f 100%);
+  box-shadow:0 8px 18px rgba(255,46,151,.35);animation:float 6s ease-in-out infinite;
+}
+.bubble.b{background:radial-gradient(circle at 32% 28%,#fff 0 9%,#c4e8ff 24%,#3aa9ff 64%,#0f78d6 100%);box-shadow:0 8px 18px rgba(30,155,255,.3)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.ticks{position:absolute;width:34px;height:30px;pointer-events:none}
+.ticks i{position:absolute;width:4px;height:13px;border-radius:3px;background:var(--pink)}
+.ticks i:nth-child(1){left:2px;top:12px;transform:rotate(-40deg)}
+.ticks i:nth-child(2){left:14px;top:2px}
+.ticks i:nth-child(3){left:26px;top:12px;transform:rotate(40deg)}
+
+/* ===== top bar ===== */
+.progress{position:fixed;top:0;left:0;right:0;height:4px;z-index:60}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--blue));border-radius:0 4px 4px 0}
+.bar{position:sticky;top:12px;z-index:50;max-width:1000px;margin:12px auto 0;padding:0 16px}
+.bar-in{display:flex;align-items:center;gap:10px;background:var(--glass);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow);border-radius:999px;padding:7px 8px 7px 18px}
+.brand{font:800 13px var(--px);letter-spacing:.02em;white-space:nowrap}
+.brand em{font-style:normal;color:var(--pink)}
+.nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-left:auto}
+.nav::-webkit-scrollbar{display:none}
+.nav a{font-size:13px;font-weight:700;color:var(--ink-2);text-decoration:none;padding:7px 12px;border-radius:999px;white-space:nowrap;transition:.2s}
+.nav a:hover,.nav a.act{background:var(--pink-soft);color:var(--pink)}
+.count{flex:none;font:800 12px var(--px);letter-spacing:.02em;color:#fff;background:var(--ink);border-radius:999px;padding:7px 12px;white-space:nowrap}
+.count b{color:var(--pink-2);font-weight:700}
+
+/* ===== hero ===== */
+.hero{position:relative;padding:54px 0 30px}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.meta-tags{display:flex;align-items:center;gap:14px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
+.meta-tags span+span::before{content:"|";margin-right:14px;color:var(--ink-3);font-weight:400}
+.meta-tags svg{color:var(--pink);width:22px;height:22px}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:center;margin-top:34px}
+h1{font-family:var(--pixel);font-weight:400;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;word-spacing:-.7em}
+h1 .l1{display:block;font-size:clamp(40px,8vw,92px);color:var(--ink)}
+h1 .l2{display:block;margin-top:6px;font-size:clamp(28px,5.4vw,62px);color:var(--blue)}
+.lead{font-size:clamp(22px,3.2vw,32px);font-weight:800;line-height:1.12;margin-top:16px;letter-spacing:-.01em}
+.lead svg{color:var(--pink);width:.8em;height:.8em;vertical-align:.02em}
+.feat{margin-top:24px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.95);border-radius:22px;box-shadow:var(--shadow);padding:14px 20px;max-width:440px}
+.feat li{list-style:none;display:flex;align-items:center;gap:14px;font-size:16px;font-weight:600;padding:7px 0}
+.feat li svg{flex:none;width:22px;height:22px;color:var(--pink)}
+
+/* hero stage */
+.stage{position:relative;height:430px}
+.toggle-card{
+  position:absolute;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:24px;width:250px;
+  background:linear-gradient(160deg,rgba(255,255,255,.92),rgba(255,236,247,.78));
+  border:1.5px solid rgba(255,255,255,.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:inset 0 2px 0 #fff,0 0 0 1px rgba(255,46,151,.12),0 18px 34px rgba(255,46,151,.18);
+  animation:float 7s ease-in-out infinite;
+}
+.toggle-card .ico{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#ff9fd2,#ff3f9f);box-shadow:inset 0 2px 0 rgba(255,255,255,.5)}
+.toggle-card .ico.b{background:linear-gradient(180deg,#a8ddff,#2a9cff)}
+.toggle-card .ico svg{width:24px;height:24px}
+.toggle-card b{font-size:15px;line-height:1.2;font-weight:700;flex:1}
+.sw{position:relative;flex:none;width:58px;height:32px;border-radius:999px;border:none;cursor:pointer;background:#e6e6ec;box-shadow:inset 0 2px 4px rgba(0,0,0,.12);transition:.25s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:.25s cubic-bezier(.3,1.6,.5,1)}
+.sw.on{background:linear-gradient(180deg,#ff7cc2,#ff2e97);box-shadow:inset 0 2px 4px rgba(150,0,70,.25),0 0 14px rgba(255,46,151,.45)}
+.sw.on::after{left:29px}
+.claude-key{position:absolute;right:4px;top:300px;width:140px;height:140px;transform:rotate(-6deg);animation:float 6s ease-in-out infinite;animation-delay:.8s}
+.claude-key svg.star8{width:60px;height:60px;color:#e8774b}
+.claude-key small{position:absolute;bottom:16px;font:800 17px Manrope,sans-serif}
+.cursor3d{position:absolute;right:-12px;top:410px;width:66px;filter:drop-shadow(0 10px 14px rgba(255,46,151,.35));animation:float 5s ease-in-out infinite;animation-delay:.3s}
+
+/* marquee */
+.marquee{overflow:hidden;margin:26px -16px 0;padding:13px 0;transform:rotate(-1.2deg);
+  background:linear-gradient(180deg,#ff8ccb,#ff2e97 60%,#ec1180);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 12px 26px rgba(255,46,151,.3)}
+.marquee .track{display:flex;width:max-content;animation:run 30s linear infinite}
+.marquee .track span{display:inline-flex;align-items:center;gap:22px;padding-right:22px;font:800 17px var(--px);letter-spacing:.02em;text-transform:uppercase;color:#fff;white-space:nowrap}
+.marquee svg{width:16px;height:16px;color:#fff}
+@keyframes run{to{transform:translateX(-50%)}}
+
+/* ===== bento map ===== */
+.bento{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:46px}
+.tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:18px;min-height:150px;padding:18px;border-radius:26px;text-decoration:none;color:var(--ink);transition:transform .25s,box-shadow .25s}
+.tile.key{place-items:initial;display:flex}
+.tile:hover{transform:translateY(-6px) rotate(-1deg);box-shadow:inset 0 2px 0 #fff,0 22px 40px rgba(255,46,151,.22)}
+.tile .em{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#ff9fd2,#ff3f9f);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 6px 14px rgba(255,46,151,.3)}
+.tile .em.b{background:linear-gradient(180deg,#a8ddff,#2a9cff);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 6px 14px rgba(30,155,255,.3)}
+.tile .em svg{width:24px;height:24px}
+.tile h4{font:800 21px/1.05 var(--px);text-transform:uppercase}
+.tile small{display:block;font-size:13px;color:var(--ink-2);margin-top:5px;font-weight:600}
+.tile .n{position:absolute;top:16px;right:18px;font:800 16px var(--px);color:var(--ink-3)}
+.tile.big{grid-column:span 2;background:linear-gradient(150deg,#ff9fd2,#ff3f9f 60%,#ee1683);color:#fff;box-shadow:inset 0 2px 0 rgba(255,255,255,.45),0 18px 36px rgba(255,46,151,.32)}
+.tile.big .em{background:#fff;color:var(--pink)}
+.tile.big small,.tile.big .n{color:rgba(255,255,255,.9)}
+.tile.done .n{color:#fff;background:var(--ink);border-radius:999px;padding:2px 9px;font-size:13px}
+.tile.done .n::after{content:" ✓"}
+
+/* ===== sections ===== */
+section{padding:46px 0 10px}
+.sec-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.num{flex:none;width:64px;height:64px;font:400 18px var(--pixel);color:var(--pink)}
+.num.b{color:var(--blue)}
+h2{font:400 clamp(20px,3.3vw,32px)/1.3 var(--pixel);text-transform:uppercase;letter-spacing:-.03em;word-spacing:-.45em}
+h2 em{font-style:normal;color:var(--blue)}
+.sub{color:var(--ink-2);margin:10px 0 22px 80px;font-size:16px;font-weight:600}
+.sub b{color:var(--pink)}
+.done-btn{margin-left:auto;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font:700 13px Manrope,sans-serif;color:var(--ink);background:#fff;border:none;border-radius:999px;padding:7px 8px 7px 16px;box-shadow:var(--shadow);transition:.2s}
+.done-btn .sw{width:46px;height:26px;pointer-events:none}
+.done-btn .sw::after{width:20px;height:20px}
+.done-btn .sw.on::after{left:23px}
+.done-btn:hover{transform:translateY(-2px)}
+
+.card{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:24px;margin-bottom:16px}
+.card.glass{background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,240,248,.85));border:1.5px solid #fff}
+.card.glass.b{background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(232,245,255,.9))}
+.card h3{font-size:19px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.card h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 4px var(--pink-soft)}
+.card h3 .dot.b{background:var(--blue);box-shadow:0 0 0 4px var(--blue-soft)}
+.card p,.card li{color:var(--ink-2);font-size:15px}
+.card ul{padding-left:20px;margin-top:6px}
+.card li{margin:6px 0}
+.card li::marker{color:var(--pink)}
+.card b{color:var(--ink);font-weight:800}
+.hl{color:var(--pink)!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.note{display:flex;gap:12px;align-items:flex-start;margin-top:14px;padding:14px 16px;border-radius:18px;background:var(--pink-soft);font-size:15px;font-weight:600;color:var(--ink)}
+.note svg{flex:none;width:20px;height:20px;color:var(--pink);margin-top:2px}
+.note.b{background:var(--blue-soft)}
+.note.b svg{color:var(--blue)}
+
+/* steps */
+.steps{counter-reset:s;list-style:none;padding-left:0!important}
+.steps>li{counter-increment:s;position:relative;padding-left:44px;margin:13px 0!important;color:var(--ink)!important;font-weight:600}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:-2px;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font:800 16px var(--px);color:#fff;background:linear-gradient(180deg,#ff9fd2,#ff3f9f);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 4px 10px rgba(255,46,151,.3)}
+.b-steps>li::before{background:linear-gradient(180deg,#a8ddff,#2a9cff);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 4px 10px rgba(30,155,255,.3)}
+.why{display:block;font-size:13px;color:var(--ink-3);font-weight:600;margin-top:2px}
+
+/* buttons */
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font:700 14px Manrope,sans-serif;color:var(--ink);padding:11px 18px;border-radius:16px;cursor:pointer;border:none;
+  background:linear-gradient(180deg,#fff,#f2f2f6);box-shadow:inset 0 2px 0 #fff,inset 0 -4px 0 rgba(12,12,16,.07),0 6px 14px rgba(40,30,80,.12);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 2px 0 #fff,inset 0 -1px 0 rgba(12,12,16,.07),0 2px 4px rgba(40,30,80,.12)}
+.btn svg{width:16px;height:16px}
+.btn.pink{color:#fff;background:linear-gradient(180deg,#ff8ccb,#ff2e97);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -4px 0 rgba(150,0,70,.25),0 8px 18px rgba(255,46,151,.35)}
+.btn.blue{color:#fff;background:linear-gradient(180deg,#8ed2ff,#1e9bff);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -4px 0 rgba(0,60,150,.25),0 8px 18px rgba(30,155,255,.32)}
+
+/* table */
+.tbl-wrap{overflow-x:auto;margin-top:6px}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:14.5px;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.tbl th{background:var(--pink-soft);text-align:left;font:800 12px var(--px);letter-spacing:.02em;text-transform:uppercase;padding:11px 14px}
+.tbl td{padding:12px 14px;border-top:1px solid var(--line);color:var(--ink-2);vertical-align:top;background:#fff}
+.tbl td b{color:var(--ink)}
+
+/* chooser */
+.chooser{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px}
+.chooser p{font-weight:800;margin-right:4px}
+.chip{cursor:pointer;font:700 14px Manrope,sans-serif;border:none;color:var(--ink);border-radius:999px;padding:10px 18px;background:#fff;box-shadow:var(--shadow);transition:.2s}
+.chip:hover{transform:translateY(-2px)}
+.chip.on{color:#fff;background:linear-gradient(180deg,#ff8ccb,#ff2e97);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 8px 18px rgba(255,46,151,.35)}
+.variants .card{transition:opacity .3s,transform .3s,box-shadow .3s}
+.variants.picked .card{opacity:.38;transform:scale(.98)}
+.variants.picked .card.pick{opacity:1;transform:scale(1.01);box-shadow:0 0 0 3px var(--pink),0 20px 40px rgba(255,46,151,.25)}
+.variants.picked .card.pick.vb{box-shadow:0 0 0 3px var(--blue),0 20px 40px rgba(30,155,255,.25)}
+
+/* checklist switches */
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:4px}
+.check{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;cursor:pointer;border:1.5px solid #fff;text-align:left;font:700 14.5px Manrope,sans-serif;color:var(--ink);
+  background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,240,248,.85));box-shadow:var(--shadow);transition:.2s}
+.check:hover{transform:translateY(-2px)}
+.check>span:first-child{flex:1}
+.check .sw{pointer-events:none}
+
+/* tabs */
+.tabs{display:inline-flex;background:#fff;border-radius:999px;padding:5px;box-shadow:var(--shadow);margin-bottom:14px}
+.tab{cursor:pointer;border:none;background:transparent;font:700 14px Manrope,sans-serif;color:var(--ink-2);padding:9px 22px;border-radius:999px;transition:.2s}
+.tab.on{background:var(--ink);color:#fff}
+.pane{display:none}
+.pane.on{display:block;animation:fadeUp .35s ease}
+
+/* prompt */
+.prompt{margin-top:16px;border-radius:20px;overflow:hidden;background:var(--code);border:1px solid var(--line);box-shadow:inset 0 1px 0 #fff}
+.prompt-top{display:flex;align-items:center;gap:10px;padding:10px 10px 10px 16px;background:#fff;border-bottom:1px dashed rgba(12,12,16,.12)}
+.prompt-top span{font:800 12px/1.5 var(--px);letter-spacing:.02em;text-transform:uppercase}
+.prompt-top span::before{content:"✦ ";color:var(--pink)}
+.copy{margin-left:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font:700 13px Manrope,sans-serif;color:#fff;border:none;padding:8px 15px;border-radius:12px;
+  background:linear-gradient(180deg,#2a2a33,#0c0c10);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 4px 10px rgba(0,0,0,.18);transition:.15s}
+.copy:hover{background:linear-gradient(180deg,#ff8ccb,#ff2e97)}
+.copy:active{transform:translateY(2px)}
+.copy.ok{background:linear-gradient(180deg,#ff8ccb,#ff2e97)}
+pre{margin:0;padding:18px;font:13.5px/1.65 "JetBrains Mono",ui-monospace,monospace;color:#1c1c22;white-space:pre-wrap;word-break:break-word}
+.prompt.long pre{max-height:240px;overflow:hidden;transition:max-height .45s ease}
+.prompt.long:not(.open) pre{-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.prompt.long.open pre{max-height:4000px}
+.more{display:block;width:100%;cursor:pointer;border:none;border-top:1px dashed rgba(12,12,16,.12);background:#fff;font:700 13px Manrope,sans-serif;color:var(--pink);padding:11px}
+.cmd{display:flex;align-items:center;gap:8px;background:var(--code);border:1px solid var(--line);border-radius:14px;padding:7px 7px 7px 12px;margin-top:12px}
+.cmd code{font:13px "JetBrains Mono",ui-monospace,monospace;overflow-x:auto;white-space:nowrap;flex:1;scrollbar-width:none}
+.cmd code::-webkit-scrollbar{display:none}
+
+/* skills */
+.skills{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 4px}
+.skill{padding:18px;border-radius:24px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;transition:transform .25s}
+.skill.key{place-items:initial}
+.skill:hover{transform:translateY(-5px) rotate(-1.5deg)}
+.skill .em{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;background:var(--pink-soft)}
+.skill:nth-child(even) .em{background:var(--blue-soft)}
+.skill h4{font:800 16px/1.3 var(--px);text-transform:uppercase}
+.skill p{font-size:13.5px;color:var(--ink-2);font-weight:600}
+
+/* algorithm */
+.alg{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.ms{padding:16px;border-radius:22px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);transition:transform .2s}
+.ms:hover{transform:translateY(-4px)}
+.ms b{font:400 17px var(--pixel);color:var(--pink)}
+.ms:nth-child(even) b{color:var(--blue)}
+.ms h4{font-size:15px;font-weight:800;margin:4px 0}
+.ms p{font-size:13px;color:var(--ink-2)}
+.formula{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.formula span{font:800 13px var(--px);letter-spacing:.02em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:#fff;box-shadow:var(--shadow)}
+.formula span:nth-child(odd){color:var(--pink)}
+.formula span:nth-child(even){color:var(--blue)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pills span{font-size:11.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:#fff;box-shadow:var(--shadow)}
+
+/* folders — macOS Finder */
+.finder{margin-top:46px;border-radius:22px;background:rgba(255,255,255,.72);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.95);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 22px 50px rgba(40,30,80,.14);overflow:hidden}
+.finder-bar{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.06);background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(246,246,250,.8))}
+.lights{display:flex;gap:8px}
+.lights i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15)}
+.lights i:nth-child(1){background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.finder-title{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;font:600 13px -apple-system,BlinkMacSystemFont,"SF Pro Text",Manrope,sans-serif;color:#3a3a40}
+.finder-title svg{width:15px;height:15px;color:#4ea4ef}
+.finder-count{font:500 12px -apple-system,BlinkMacSystemFont,Manrope,sans-serif;color:var(--ink-3)}
+.folders{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;padding:22px 16px 18px}
+.folder-btn{display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;cursor:pointer;padding:10px 6px 12px;border-radius:14px;font:inherit;color:var(--ink);transition:background .2s}
+.folder-btn:hover{background:rgba(0,0,0,.035)}
+.folder-btn:hover .ficon{transform:translateY(-3px) scale(1.04)}
+.ficon{position:relative;width:88px;height:72px;transition:transform .3s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 6px 10px rgba(30,100,180,.22))}
+.ficon svg{width:100%;height:100%;overflow:visible}
+.ficon .fb{fill:url(#fbB)}
+.ficon .ff{fill:url(#ffB)}
+.ficon .paper{fill:#fff;opacity:.95}
+.ficon .shine{stroke:rgba(255,255,255,.55);stroke-width:1.2}
+.ficon .glyph{position:absolute;left:50%;top:58%;width:26px;height:26px;transform:translate(-50%,-50%);color:rgba(10,70,140,.42);filter:drop-shadow(0 1px 0 rgba(255,255,255,.55))}
+.flabel{margin-top:6px;font:600 13.5px/1.25 -apple-system,BlinkMacSystemFont,"SF Pro Text",Manrope,sans-serif;text-align:center;padding:2px 8px;border-radius:6px;transition:.2s}
+.folder-btn .fn{font:500 11px -apple-system,BlinkMacSystemFont,Manrope,sans-serif;color:var(--ink-3);letter-spacing:0;text-transform:none}
+.fbar{display:block;width:56px;height:4px;border-radius:4px;background:rgba(0,0,0,.07);overflow:hidden;margin-top:4px}
+.fbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--blue));transition:width .5s ease}
+.folder-btn.on{background:rgba(255,46,151,.08)}
+.folder-btn.on .ficon{filter:drop-shadow(0 8px 14px rgba(255,46,151,.35))}
+.folder-btn.on .fb{fill:url(#fbP)}
+.folder-btn.on .ff{fill:url(#ffP)}
+.folder-btn.on .glyph{color:rgba(140,0,70,.42)}
+.folder-btn.on .flabel{background:var(--pink);color:#fff}
+.folder-btn.full .fn::after{content:" · ✓";color:var(--pink);font-weight:700}
+
+/* lessons */
+.lesson{display:none}
+.lesson.on{display:block;animation:fadeUp .4s ease}
+.kicker{display:block;font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.block{position:relative;margin-top:30px}
+.step-tag{display:inline-flex;align-items:center;gap:10px;margin:0 0 12px;font:800 13px/1.4 var(--px);letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.step-tag::before{content:"";width:22px;height:22px;border-radius:7px;background:linear-gradient(180deg,#ff9fd2,#ff3f9f);box-shadow:inset 0 2px 0 rgba(255,255,255,.5)}
+.lesson[data-lesson="2"] .step-tag::before,.lesson[data-lesson="4"] .step-tag::before{background:linear-gradient(180deg,#a8ddff,#2a9cff)}
+.next{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:34px;padding:18px;border-radius:24px;background:var(--glass);border:1.5px solid #fff;box-shadow:var(--shadow)}
+.next span{font-weight:800;margin-right:auto}
+.next .btn:first-child:not(.pink){margin-right:auto}
+
+/* tracker */
+.tracker{padding:22px;border-radius:28px;background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(255,236,247,.9));border:1.5px solid #fff;box-shadow:inset 0 2px 0 #fff,0 0 0 1px rgba(255,46,151,.1),0 18px 36px rgba(255,46,151,.14)}
+.lesson[data-lesson="2"] .tracker,.lesson[data-lesson="4"] .tracker{background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(228,244,255,.92));box-shadow:inset 0 2px 0 #fff,0 0 0 1px rgba(30,155,255,.1),0 18px 36px rgba(30,155,255,.14)}
+.tr-head{display:flex;align-items:center;gap:12px}
+.tr-head h3{font:800 18px/1.3 var(--px);text-transform:uppercase}
+.tr-count{margin-left:auto;font:800 14px var(--px);background:var(--ink);color:#fff;border-radius:999px;padding:5px 12px}
+.tr-count b{color:var(--pink-2)}
+.tr-bar{height:10px;border-radius:10px;background:#fff;margin:14px 0 16px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.08)}
+.tr-bar i{display:block;height:100%;width:0;border-radius:10px;background:linear-gradient(90deg,var(--pink),var(--blue));transition:width .5s ease}
+.check.on{background:linear-gradient(160deg,#fff,#ffe3f1)}
+.check.on span:first-child{text-decoration:line-through;text-decoration-color:var(--pink);text-decoration-thickness:2px;color:var(--ink-2)}
+.tracker.full .tr-count{background:linear-gradient(180deg,#ff8ccb,#ff2e97)}
+.tracker.full .tr-count b{color:#fff}
+.tracker.at-end{margin-top:34px}
+.lesson-bars{display:grid;gap:7px;margin:4px 0 16px;max-width:420px}
+.lb{display:grid;grid-template-columns:118px 1fr 44px;align-items:center;gap:10px;font-size:13px;font-weight:700;text-align:left;cursor:pointer;border:none;background:none;color:var(--ink);padding:0}
+.lb i{display:block;height:8px;border-radius:8px;background:#fff;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
+.lb i u{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--blue));transition:width .5s}
+.lb em{font-style:normal;color:var(--ink-3);text-align:right}
+
+/* lesson 6: montage (from neuropedalirovanie) */
+.skills.wide,.lesson[data-lesson="7"] .skills:not(:first-of-type){grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.skill:not(.key){background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
+.skill .cmd{width:100%;margin-top:4px}
+.skill a{font-size:13px;font-weight:800;color:var(--blue);text-decoration:none}
+.tag{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--pink-soft);color:#c21a72}
+.tag.b{background:var(--blue-soft);color:#1468b8}
+.tag.g{background:#dff5e6;color:#2b7a45}
+.tag.l{background:#ece6fb;color:#6a4bb8}
+.tree{font:14px/1.95 "JetBrains Mono",ui-monospace,monospace;background:var(--code);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:12px;overflow-x:auto;white-space:nowrap}
+.tree .f{color:var(--pink);font-weight:600}
+.tree .c{color:var(--ink-3)}
+.mark{background:linear-gradient(transparent 55%,var(--pink-soft) 55%);padding:0 2px}
+.conn-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:6px}
+.conn-head h3{margin-bottom:2px}
+.conn-ico{flex:none;width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:#fff;box-shadow:inset 0 2px 0 #fff,inset 0 -4px 0 rgba(12,12,16,.06),0 8px 16px rgba(40,30,80,.12)}
+.card code{font:12.5px "JetBrains Mono",monospace;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:2px 6px;word-break:break-all}
+.skill .dl{margin-top:auto;padding:9px 14px;font-size:13px}
+/* help */
+.faq{display:grid;gap:10px;margin-top:20px}
+.qa{border-radius:20px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.qa summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px 18px;font-weight:800;font-size:15.5px}
+.qa summary::-webkit-details-marker{display:none}
+.qa .pm{margin-left:auto;flex:none;width:28px;height:28px;border-radius:50%;background:var(--pink-soft);position:relative;transition:.25s}
+.qa .pm::before,.qa .pm::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:2px;background:var(--pink);border-radius:2px;transform:translate(-50%,-50%)}
+.qa .pm::after{transform:translate(-50%,-50%) rotate(90deg);transition:.25s}
+.qa[open] .pm{background:var(--pink)}
+.qa[open] .pm::before,.qa[open] .pm::after{background:#fff}
+.qa[open] .pm::after{transform:translate(-50%,-50%) rotate(0)}
+.qa p{padding:0 18px 18px;color:var(--ink-2);font-size:15px}
+.qa a{color:var(--pink)}
+.note a{color:inherit}
+/* favorites */
+.star{flex:none;width:34px;height:34px;border-radius:11px;border:none;cursor:pointer;font-size:17px;line-height:1;color:var(--ink-3);background:#f4f4f7;transition:.2s}
+.star:hover{color:var(--pink);transform:scale(1.08)}
+.star svg{width:18px;height:18px;display:block;margin:auto}
+.star.on path{fill:currentColor}
+.star.on{color:#fff;background:linear-gradient(180deg,#ff8ccb,#ff2e97);box-shadow:0 4px 10px rgba(255,46,151,.35)}
+.prompt-top .star{margin-left:auto}
+.prompt-top .star+.copy{margin-left:6px}
+.fav-item{margin-bottom:14px}
+.fav-from{display:inline-block;margin-bottom:6px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+/* glossary — stickers */
+.gl-tools{display:grid;gap:12px;margin-bottom:22px}
+.gl-search{width:100%;font:600 16px Manrope,sans-serif;padding:14px 18px;border-radius:18px;border:1.5px solid #fff;background:rgba(255,255,255,.9);box-shadow:var(--shadow);outline:none}
+.gl-search:focus{border-color:var(--pink);box-shadow:0 0 0 4px var(--pink-soft)}
+.gl-chips{display:flex;flex-wrap:wrap;gap:8px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:38px 28px;padding:22px 10px 14px}
+.term{position:relative;transform:rotate(-2.2deg);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.term:nth-child(4n+2){transform:rotate(1.5deg)}
+.term:nth-child(4n+3){transform:rotate(-.8deg)}
+.term:nth-child(4n){transform:rotate(2.6deg)}
+.term:hover{transform:rotate(0) scale(1.05);z-index:3}
+/* lifted-corner shadow */
+.term::after{content:"";position:absolute;z-index:-1;right:8px;bottom:12px;width:55%;height:30%;background:rgba(40,30,60,.5);filter:blur(9px);transform:rotate(4deg) skewX(8deg)}
+.term::before{content:"";position:absolute;z-index:-1;left:8px;bottom:12px;width:45%;height:24%;background:rgba(40,30,60,.32);filter:blur(8px);transform:rotate(-3deg) skewX(-8deg)}
+.st{position:relative;display:flex;flex-direction:column;gap:6px;height:100%;min-height:210px;padding:34px 22px 24px;color:#2a2a33;background-color:#ffcfe6;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 30%,rgba(0,0,0,.05)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");box-shadow:0 1px 1px rgba(0,0,0,.12)}
+/* tape */
+.st::before{content:"";position:absolute;top:-13px;left:50%;width:96px;height:28px;transform:translateX(-50%) rotate(-3deg);
+  background:repeating-linear-gradient(135deg,rgba(255,46,151,.55) 0 8px,rgba(255,150,205,.55) 8px 16px);box-shadow:0 1px 2px rgba(0,0,0,.15);
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 4px,#000 calc(100% - 4px),transparent 100%);mask:linear-gradient(90deg,transparent 0,#000 4px,#000 calc(100% - 4px),transparent 100%)}
+/* 2 — notebook page */
+.term:nth-child(4n+2) .st{padding-left:44px;background-color:#fdfdff;
+  background-image:radial-gradient(circle at 16px 13px,#f7f7fa 5px,rgba(0,0,0,.12) 5.5px,transparent 6.5px),linear-gradient(90deg,transparent 33px,rgba(255,46,151,.45) 33px 34.5px,transparent 34.5px),repeating-linear-gradient(180deg,transparent 0 25px,rgba(30,155,255,.35) 25px 26px),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:100% 26px,auto,auto,auto}
+.term:nth-child(4n+2) .st::before{background:repeating-linear-gradient(135deg,rgba(30,155,255,.5) 0 8px,rgba(150,210,255,.55) 8px 16px);transform:translateX(-50%) rotate(2deg)}
+/* 3 — yellow sticky with folded corner */
+.term:nth-child(4n+3) .st{background-color:#fff0a0;clip-path:polygon(0 0,100% 0,100% calc(100% - 30px),calc(100% - 30px) 100%,0 100%)}
+.term:nth-child(4n+3) .st::before{top:auto;bottom:0;left:auto;right:0;width:30px;height:30px;transform:none;background:linear-gradient(135deg,#e6d27a 0%,#fff7c8 60%);box-shadow:-2px -2px 4px rgba(0,0,0,.15);-webkit-mask:none;mask:none}
+/* 4 — grid paper, corner tape */
+.term:nth-child(4n) .st{background-color:#fff;
+  background-image:linear-gradient(rgba(30,155,255,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(30,155,255,.2) 1px,transparent 1px),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:20px 20px,20px 20px,auto}
+.term:nth-child(4n) .st::before{left:-22px;top:6px;width:86px;transform:rotate(-38deg);background:repeating-linear-gradient(135deg,rgba(255,46,151,.5) 0 8px,rgba(255,150,205,.5) 8px 16px)}
+.term .em{position:absolute;right:12px;top:10px;z-index:2;font-size:26px;transform:rotate(12deg);filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+.term .tag{align-self:flex-start;background:none;padding:0;border-radius:0;font-size:10px;letter-spacing:.18em;color:rgba(42,42,51,.5)}
+.term h4{font:700 30px/1.05 Caveat,"Marker Felt",cursive;color:#16161c;text-transform:none;letter-spacing:0;word-spacing:normal;text-shadow:none;padding-right:26px}
+.term:nth-child(4n+2) h4{color:#1468b8}
+.term:nth-child(4n) h4{color:var(--pink)}
+.term p{font-size:14.5px;line-height:26px;font-weight:600;color:rgba(42,42,51,.82)}
+.term:not(:nth-child(4n+2)) p{line-height:1.45}
+.finder .ficon{width:80px;height:66px}
+/* finish */
+.done-card{display:flex;align-items:center;gap:28px;padding:28px;border-radius:32px;background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(255,236,247,.9));border:1.5px solid #fff;box-shadow:var(--shadow)}
+.ring{position:relative;flex:none;width:130px;height:130px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .bg{fill:none;stroke:#fff;stroke-width:13}
+.ring .fg{fill:none;stroke:url(#rg);stroke-width:13;stroke-linecap:round;stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset .7s ease}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:400 18px var(--pixel)}
+.done-card h3{font:800 20px/1.3 var(--px);text-transform:uppercase}
+.done-card p{color:var(--ink-2);font-weight:600;margin:6px 0 14px}
+
+/* footer */
+footer{padding:50px 0 90px;text-align:center}
+.sign{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:40px;font-size:14px;font-weight:600;letter-spacing:.55em;text-transform:uppercase}
+.sign::before,.sign::after{content:"";width:90px;height:1.5px;background:var(--ink)}
+
+/* misc */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:#fff;font:700 14px Manrope,sans-serif;padding:12px 22px;border-radius:999px;transition:.25s;pointer-events:none;z-index:70}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.heart-fly{position:fixed;pointer-events:none;z-index:70;color:var(--pink);font-size:17px;animation:fly .9s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),-80px) scale(.5);opacity:0}}
+.totop{position:fixed;right:18px;bottom:22px;z-index:45;width:54px;height:54px;border:none;cursor:pointer;color:var(--pink);font:800 18px var(--px);opacity:0;transform:translateY(16px);transition:.25s}
+.totop.show{opacity:1;transform:none}
+.rv{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.count{text-decoration:none}
+@media (max-width:860px){
+  .folders{grid-template-columns:repeat(11,minmax(104px,1fr));overflow-x:auto;scroll-snap-type:x mandatory;padding:16px 10px 14px;scrollbar-width:none}
+  .ficon{width:76px;height:62px}
+  .finder-count{display:none}
+  .folders::-webkit-scrollbar{display:none}
+  .folder-btn{scroll-snap-align:start}
+  .hero-grid{grid-template-columns:1fr}
+  .stage{height:330px;max-width:420px}
+  .alg{grid-template-columns:repeat(2,1fr)}
+  .skills{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:720px){
+  .grid2{grid-template-columns:1fr}
+  .sub{margin-left:0}
+  .nav{display:none}
+  .count{margin-left:auto}
+  .bento{grid-template-columns:1fr 1fr}
+  .tile{min-height:132px}
+  .done-btn{margin-left:0}
+  .done-card{flex-direction:column;text-align:center}
+  .meta-tags{font-size:10.5px;gap:10px;letter-spacing:.16em}
+  .meta-tags span+span::before{margin-right:10px}
+  .toggle-card{width:236px}
+  .claude-key{width:112px;height:112px;top:120px;right:0}
+  .cursor3d{top:212px;right:-8px}
+  .sign{letter-spacing:.35em;font-size:12px;gap:12px}
+  .sign::before,.sign::after{width:36px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+}
+/* ===== iPhone ===== */
+html{-webkit-text-size-adjust:100%}
+button,a{-webkit-tap-highlight-color:transparent}
+.tabbar{display:none}
+@media (max-width:720px){
+  body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .wrap{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+  .bar{top:max(8px,env(safe-area-inset-top))}
+  .hero{padding-top:30px}
+  .hero-grid{margin-top:22px;gap:10px}
+  h1 .l1{font-size:13.4vw}
+  h1 .l2{font-size:8.6vw}
+  .lead{font-size:21px}
+  .feat{max-width:none;padding:10px 16px}
+  .feat li{font-size:15px;gap:12px}
+  .stage{height:250px;max-width:none;margin-top:6px}
+  .toggle-card{width:205px;padding:10px 12px;border-radius:20px;gap:10px}
+  .toggle-card .ico{width:38px;height:38px;border-radius:12px}
+  .toggle-card b{font-size:13.5px}
+  .toggle-card:nth-of-type(1){top:10px!important}
+  .toggle-card:nth-of-type(2){top:92px!important;left:8%!important}
+  .toggle-card:nth-of-type(3){top:174px!important}
+  .stage .sw{width:50px;height:28px}
+  .stage .sw::after{width:22px;height:22px}
+  .stage .sw.on::after{left:25px}
+  .claude-key{width:100px;height:100px;top:70px;right:2px}
+  .claude-key svg.star8{width:44px;height:44px}
+  .claude-key small{font-size:14px;bottom:10px}
+  .cursor3d{top:150px;right:-4px;width:52px}
+  .stage .bubble,.stage .ticks{display:none}
+  .marquee{margin-top:14px;padding:10px 0}
+  .marquee .track span{font-size:14px;gap:16px;padding-right:16px}
+  /* folders: iOS home-screen grid */
+  .finder{margin-top:30px;border-radius:24px}
+  .finder-bar{padding:10px 14px}
+  .finder-title{font-size:12.5px}
+  .folders{grid-template-columns:repeat(3,1fr)!important;overflow:visible!important;padding:14px 8px 12px!important;gap:6px 2px}
+  .folder-btn{padding:10px 2px 10px;min-height:44px}
+  .finder .ficon{width:72px;height:59px}
+  .flabel{font-size:12.5px;padding:2px 6px}
+  /* sections */
+  section{padding-top:34px}
+  .sec-head{flex-wrap:nowrap;gap:12px;align-items:center}
+  .num{width:50px;height:50px;font-size:14px!important;border-radius:16px}
+  .kicker{font-size:10.5px;letter-spacing:.14em;margin-bottom:4px}
+  h2{font-size:5.3vw;line-height:1.35}
+  .sub{margin:12px 0 18px;font-size:15px}
+  .tracker{padding:16px;border-radius:24px}
+  .checks{grid-template-columns:1fr;gap:8px}
+  .check{min-height:52px;padding:10px 14px}
+  .card{padding:18px;border-radius:24px}
+  .card h3{font-size:17.5px}
+  .block{margin-top:24px}
+  .tabs{display:flex;width:100%;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:1;white-space:nowrap;padding:11px 14px}
+  .prompt-top{flex-wrap:wrap;row-gap:8px}
+  .prompt-top span{flex:1;min-width:0}
+  .copy{padding:10px 15px}
+  .star{width:38px;height:38px}
+  pre{padding:14px;font-size:12.5px}
+  .cmd{flex-wrap:wrap}
+  .cmd code{flex-basis:100%;padding:4px 2px}
+  .btn{padding:13px 18px}
+  .links .btn{flex:1 1 auto;justify-content:center}
+  .tbl th,.tbl td{padding:10px}
+  .chooser{gap:8px}
+  .chooser p{flex-basis:100%}
+  .chip{flex:1;padding:12px 10px;font-size:13.5px}
+  .skills{grid-template-columns:1fr 1fr!important}
+  .skill{padding:14px}
+  .alg{grid-template-columns:1fr 1fr}
+  .next{padding:14px;border-radius:22px}
+  .next .btn{flex:1 1 100%;margin:0!important;justify-content:center}
+  .next span{flex-basis:100%;margin:0}
+  .gl-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:2px 14px}
+  .gl-chips::-webkit-scrollbar{display:none}
+  .gl-chips .chip{flex:none}
+  .gloss{grid-template-columns:1fr;gap:30px;padding:18px 8px 10px}
+  .st{min-height:0}
+  .done-card{padding:20px;gap:16px;border-radius:26px}
+  .lesson-bars{max-width:none}
+  .lb{grid-template-columns:104px 1fr 40px}
+  .qa summary{padding:15px 16px;font-size:15px}
+  footer{padding:36px 0 30px}
+  .totop{display:none}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom));white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+  /* iOS tab bar */
+  .tabbar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:55;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;border-radius:26px;
+    background:rgba(255,255,255,.78);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);border:1px solid rgba(255,255,255,.95);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 14px 34px rgba(40,30,80,.2)}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px 5px;border-radius:20px;text-decoration:none;color:var(--ink-3);font:600 10.5px -apple-system,BlinkMacSystemFont,Manrope,sans-serif;transition:.2s}
+  .tabbar svg{width:23px;height:23px}
+  .tabbar a.act{color:var(--pink);background:var(--pink-soft)}
+}
+html,body{overflow-x:hidden;overflow-x:clip;max-width:100%}
+@media (max-width:720px){
+  .hero{padding-top:22px;overflow-x:clip}
+  .meta-tags{display:none}
+  .gpill{font-size:12px;padding:8px 18px}
+  .hero-grid{margin-top:18px;gap:14px}
+  h1{line-height:1.1}
+  h1 .l1{font-size:min(12.4vw,54px)}
+  h1 .l2{font-size:min(8vw,35px);margin-top:4px}
+  .lead{font-size:19px;margin-top:12px}
+  .feat{margin-top:16px}
+  .feat li{padding:5px 0}
+  .stage{height:auto;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .toggle-card{position:static!important;width:auto!important;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 10px;border-radius:20px;animation:none}
+  .toggle-card b{font-size:12.5px;line-height:1.25;min-height:2.5em;flex:none}
+  .claude-key,.cursor3d{display:none}
+  .marquee{margin:18px 0 0;transform:none;border-radius:16px}
+  .finder{margin-top:22px}
+}
+@media (max-width:720px){
+  .bar-in{padding:5px 6px 5px 14px}
+  .brand{font-size:12px}
+  .count{font-size:11px;padding:6px 10px}
+  .hero{padding-top:16px;padding-bottom:10px}
+  .gpill{font-size:10.5px;padding:6px 14px;border-width:1.5px}
+  .hero-grid{margin-top:12px;gap:10px}
+  h1 .l1{font-size:min(10vw,42px)}
+  h1 .l2{font-size:min(6.4vw,27px);margin-top:2px}
+  .lead{font-size:15.5px;margin-top:8px;line-height:1.25}
+  h1{word-spacing:-.35em}
+  .feat{display:none}
+  .stage{gap:6px}
+  .toggle-card{display:grid!important;grid-template-columns:auto 1fr;align-items:center;gap:6px 6px;padding:8px;border-radius:16px}
+  .toggle-card .ico{grid-area:1/1;width:28px;height:28px;border-radius:9px}
+  .toggle-card .ico svg{width:16px;height:16px}
+  .toggle-card .sw{grid-area:1/2;justify-self:end;width:38px!important;height:22px!important}
+  .toggle-card .sw::after{width:16px!important;height:16px!important}
+  .toggle-card .sw.on::after{left:19px!important}
+  .toggle-card b{grid-area:2/1/3/3;font-size:11px;min-height:2.4em;line-height:1.2}
+  .marquee{margin-top:10px;padding:7px 0;border-radius:12px}
+  .marquee .track span{font-size:11.5px;gap:12px;padding-right:12px}
+  .marquee svg{width:10px;height:10px}
+  .finder{margin-top:14px;border-radius:20px}
+  .finder-bar{padding:8px 12px}
+  .lights i{width:10px;height:10px}
+  .folders{padding:10px 6px 8px!important;gap:2px!important}
+  .folder-btn{padding:8px 2px 8px;gap:2px}
+  .finder .ficon{width:58px;height:48px}
+  .ficon .glyph{width:19px;height:19px}
+  .flabel{font-size:12px;margin-top:3px}
+  .folder-btn .fn{font-size:10px}
+  .fbar{width:40px;height:3px;margin-top:2px}
+}
+/* desktop hero: editor + moodboard */
+.ed-wrap{display:none}
+@media (min-width:721px){
+  .ed-wrap{display:block}
+  .ed-wrap .cur{position:absolute;width:54px;filter:drop-shadow(0 8px 12px rgba(255,46,151,.35));animation:float 5s ease-in-out infinite}
+  .ed-wrap .who{position:absolute;padding:5px 11px;border-radius:999px 999px 999px 4px;background:linear-gradient(180deg,#ff7cc2,#ff2e97);color:#fff;font:800 12px Manrope,sans-serif;box-shadow:0 6px 14px rgba(255,46,151,.35);white-space:nowrap}
+  .ed-wrap .hd{position:absolute;width:12px;height:12px;border-radius:3px;background:#fff;border:2.5px solid var(--blue);box-shadow:0 2px 5px rgba(30,155,255,.3)}
+  .ed-wrap .hd.tl{left:-7px;top:-7px}
+  .ed-wrap .hd.tr{right:-7px;top:-7px}
+  .ed-wrap .hd.bl{left:-7px;bottom:-7px}
+  .ed-wrap .hd.br{right:-7px;bottom:-7px}
+  .ed-wrap .swt{display:flex;gap:8px}
+  .ed-wrap .swt i{width:34px;height:34px;border-radius:11px;box-shadow:inset 0 2px 0 rgba(255,255,255,.55),0 4px 10px rgba(0,0,0,.1)}
+  .ed-wrap .c1{background:#ff2e97}
+  .ed-wrap .c2{background:#1e9bff}
+  .ed-wrap .c3{background:#111114}
+  .ed-wrap .c4{background:#fff;border:1px solid #e6e6ee}
+  .ed-wrap .c5{background:#ffd1e8}
+  .ed-wrap .ed{--acc:#1e9bff;margin-top:30px;border-radius:30px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(20,20,40,.06),0 30px 70px rgba(255,46,151,.14),0 10px 30px rgba(30,155,255,.1);overflow:hidden}
+  .ed-wrap .ed-bar{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid rgba(20,20,40,.07);background:linear-gradient(180deg,#fff,#f6f6fa)}
+  .ed-wrap .ed-bar .lights{display:flex;gap:7px}
+  .ed-wrap .ed-bar .lights i{width:12px;height:12px;border-radius:50%;background:#ff5f57}
+  .ed-wrap .ed-bar .lights i:nth-child(2){background:#febc2e}
+  .ed-wrap .ed-bar .lights i:nth-child(3){background:#28c840}
+  .ed-wrap .ed-title{flex:1;text-align:center;font:700 13px Manrope,sans-serif;color:#6b6b7b}
+  .ed-wrap .ed-zoom{font:700 12px Manrope,sans-serif;color:var(--ink-3);padding:4px 10px;border-radius:9px;background:#eeeef3}
+  .ed-wrap .ed-body{display:grid;grid-template-columns:64px 1fr 232px;min-height:540px}
+  .ed-wrap .ed-tools{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0;border-right:1px solid rgba(20,20,40,.07)}
+  .ed-wrap .ed-tools b{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#8a8a99;font:800 18px Manrope,sans-serif}
+  .ed-wrap .ed-tools b svg{width:20px;height:20px}
+  .ed-wrap .ed-tools b.on{color:#fff;background:linear-gradient(180deg,#ff8ccb,#ff2e97);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 8px 16px rgba(255,46,151,.35)}
+  .ed-wrap .ed-canvas{position:relative;padding:34px 40px 40px;overflow:hidden;background-image:radial-gradient(rgba(20,20,40,.13) 1.2px,transparent 1.2px);background-size:22px 22px}
+  .ed-wrap .ed-kick{display:inline-block;padding:7px 14px;border-radius:999px;background:#fff;box-shadow:var(--shadow);font:800 11.5px Manrope,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--pink);margin-bottom:44px}
+  .ed-wrap .sel{position:relative;display:table;padding:14px 22px 16px;border:2.5px solid var(--acc);border-radius:6px;background:color-mix(in srgb,var(--acc) 6%,transparent);transition:border-color .25s}
+  .ed-wrap .sel .hd{border-color:var(--acc)}
+  .ed-wrap .sel h1 .l1{font-size:clamp(50px,6.6vw,84px)}
+  .ed-wrap .sel h1 .l2{font-size:clamp(34px,4.5vw,57px);color:var(--acc);transition:color .25s}
+  .ed-wrap .ed.mn .sel h1{font-family:Manrope,sans-serif;font-weight:800;letter-spacing:-.03em;word-spacing:0;line-height:.96}
+  .ed-wrap .dim{position:absolute;left:-2.5px;top:-30px;padding:4px 10px;border-radius:7px 7px 7px 0;background:var(--acc);color:#fff;font:700 11.5px Manrope,sans-serif;white-space:nowrap;transition:background .25s}
+  .ed-wrap .sel .cur{right:-46px;bottom:-40px}
+  .ed-wrap .sel .who{right:-124px;bottom:-62px}
+  .ed-wrap .ed-canvas .lead{margin-top:40px;max-width:360px;position:relative;z-index:2;font-size:clamp(19px,1.9vw,23px)}
+  .ed-wrap [data-layer]{transition:opacity .35s,transform .35s}
+  .ed-wrap [data-layer].off{opacity:0;transform:translateY(14px) scale(.94);pointer-events:none}
+  .ed-wrap .ed-fan{position:absolute;right:18px;top:128px;width:210px;height:250px}
+  .ed-wrap .sl{position:absolute;left:50%;top:0;width:150px;height:188px;margin-left:-75px;border-radius:20px;padding:14px;background:#fff;border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(20,20,40,.06),0 18px 36px rgba(20,20,60,.16);transform-origin:50% 135%;display:flex;flex-direction:column;gap:8px}
+  .ed-wrap .sl .n{font:400 9px var(--pixel);color:var(--ink-3)}
+  .ed-wrap .sl .ln{display:block;height:8px;border-radius:5px;background:#ececf3}
+  .ed-wrap .w90{width:90%}
+  .ed-wrap .w80{width:80%}
+  .ed-wrap .w60{width:60%}
+  .ed-wrap .sl .ph{display:block;height:66px;border-radius:12px;background:linear-gradient(160deg,#bfe4ff,#3aa9ff);box-shadow:inset 0 2px 0 rgba(255,255,255,.6)}
+  .ed-wrap .sl .big{font:800 50px/1 Manrope,sans-serif;color:var(--acc);margin:4px 0}
+  .ed-wrap .s3{transform:rotate(18deg)}
+  .ed-wrap .s2{transform:rotate(4deg)}
+  .ed-wrap .s1{transform:rotate(-11deg);background:linear-gradient(165deg,#ffb1d8 0%,#ff5fb0 45%,#ff2e97 100%);border-color:rgba(255,255,255,.7);box-shadow:inset 0 3px 0 rgba(255,255,255,.55),inset 0 -8px 18px rgba(150,0,70,.22),0 20px 40px rgba(255,46,151,.4)}
+  .ed-wrap .s1 .n{color:rgba(255,255,255,.85)}
+  .ed-wrap .s1 .ttl{font:400 17px/1.3 var(--pixel);color:#fff;text-transform:uppercase;margin-top:22px;text-shadow:0 2px 0 rgba(150,0,70,.25)}
+  .ed-wrap .s1 .go{margin-top:auto;align-self:flex-start;padding:5px 10px;border-radius:999px;background:#fff;color:#e81d82;font:800 10.5px Manrope,sans-serif}
+  .ed-wrap .pp{position:absolute;padding:13px 13px 9px;background:#fffdf8;border-radius:5px;box-shadow:0 12px 26px rgba(20,20,60,.15),0 2px 4px rgba(20,20,60,.08)}
+  .ed-wrap .tape{position:absolute;left:50%;top:-10px;width:62px;height:20px;margin-left:-31px;transform:rotate(-4deg);background:rgba(255,124,194,.55)}
+  .ed-wrap .pin{position:absolute;left:50%;top:-11px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0 10%,#c4e8ff 26%,#3aa9ff 66%,#0f78d6 100%);box-shadow:0 6px 10px rgba(30,155,255,.4)}
+  .ed-wrap .cap{display:block;margin-top:5px;font:700 20px/1 Caveat,cursive;color:#55556a}
+  .ed-wrap .pp .swt i{width:24px;height:24px;border-radius:8px}
+  .ed-wrap .r1{right:196px;top:20px;transform:rotate(-6deg)}
+  .ed-wrap .r3{right:34px;bottom:22px;transform:rotate(-4deg)}
+  .ed-wrap .r3 .wide{width:128px;height:72px;border-radius:9px;padding:10px;background:linear-gradient(160deg,#eaf5ff,#bfe4ff);display:flex;flex-direction:column;gap:6px}
+  .ed-wrap .r3 .wide i{display:block;height:7px;border-radius:4px;background:#fff;width:85%}
+  .ed-wrap .r3 .wide i+i{width:55%}
+  .ed-wrap .r3 .wide u{display:block;margin-top:auto;width:42%;height:16px;border-radius:6px;background:linear-gradient(180deg,#5ab8ff,#1e9bff)}
+  .ed-wrap .r4{right:250px;bottom:26px;transform:rotate(6deg)}
+  .ed-wrap .r4 .phone{width:50px;height:84px;border-radius:13px;background:#111114;padding:4px}
+  .ed-wrap .r4 .phone i{display:block;height:100%;border-radius:10px;background:linear-gradient(170deg,#ffd1e8,#ff7cc2 60%,#3aa9ff)}
+  .ed-wrap .r2{right:30px;top:30px;transform:rotate(7deg)}
+  .ed-wrap .r2 .px{font:400 20px var(--pixel);color:var(--pink)}
+  .ed-wrap .ed-side{border-left:1px solid rgba(20,20,40,.07);padding:18px 16px;display:flex;flex-direction:column;gap:18px;background:rgba(255,255,255,.6)}
+  .ed-wrap .pt{display:block;font:800 10.5px Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px}
+  .ed-wrap #edPal button{width:38px;height:38px;border-radius:12px;border:0;cursor:pointer;background:var(--c);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 4px 10px rgba(0,0,0,.12);transition:transform .2s}
+  .ed-wrap #edPal button:hover{transform:translateY(-2px)}
+  .ed-wrap #edPal button.on{box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 0 0 3px #fff,0 0 0 5.5px var(--c)}
+  .ed-wrap .pn code{display:inline-block;margin-top:12px;font:500 12px 'JetBrains Mono',monospace;padding:4px 9px;border-radius:8px;background:#f3f3f8;color:#555}
+  .ed-wrap .fnt{display:flex;gap:8px}
+  .ed-wrap .fnt button{flex:1;height:54px;border-radius:14px;border:1.5px solid #ececf2;cursor:pointer;background:#fff;font:800 22px Manrope,sans-serif;color:var(--ink)}
+  .ed-wrap .fnt button.px{font:400 16px var(--pixel)}
+  .ed-wrap .fnt button.on{border-color:var(--pink);background:#fff0f8;color:var(--pink)}
+  .ed-wrap .ly{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:12px;font:700 13px Manrope,sans-serif}
+  .ed-wrap .ly svg{width:16px;height:16px;color:var(--ink-3)}
+  .ed-wrap .ly.on{background:#eaf5ff;color:#1488ee}
+  .ed-wrap .ly.on svg{color:#1488ee}
+  .ed-wrap .ly .sw{margin-left:auto;width:40px;height:23px}
+  .ed-wrap .ly .sw::after{width:17px;height:17px}
+  .ed-wrap .ly .sw.on::after{left:20px}
+  .ed-wrap .ed-feat{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;padding:0}
+  .ed-wrap .ed-feat li{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 18px;border-radius:999px;background:var(--glass);border:1px solid rgba(255,255,255,.95);box-shadow:var(--shadow);font:600 15px Manrope,sans-serif}
+  .ed-wrap .ed-feat li svg{width:18px;height:18px;color:var(--pink);flex:none}
+}
+@media (min-width:721px) and (max-width:980px){
+  .ed-wrap .ed-body{grid-template-columns:56px 1fr 200px}
+  .ed-wrap .sel h1 .l1{font-size:42px}.ed-wrap .sel h1 .l2{font-size:28px}
+  .ed-wrap .ed-canvas{padding:30px 26px 36px}
+  .ed-wrap .ed-canvas .lead{max-width:230px;font-size:17px}
+  .ed-wrap .ed-fan{right:6px;zoom:.86}
+  .ed-wrap .r1, .ed-wrap .r4{display:none}
+}
+/* phone hero: artboard in the clouds */
+.p1{display:none}
+.hero .kick,.hero .tiny{display:none}
+@keyframes p1fl{0%,100%{translate:0 0}50%{translate:0 -9px}}
+@media (max-width:720px){
+  .hero{padding-top:22px}
+  .p1{display:block;position:relative;height:590px;margin-top:14px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,#2f95ff 0%,#6ab9ff 34%,#b9e0ff 66%,#eef8ff 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 0 0 1px rgba(20,20,40,.05),0 30px 60px rgba(30,155,255,.28)}
+  .p1 .cl{position:absolute;border-radius:50%;background:#fff;filter:blur(14px);opacity:.92}
+  .p1 .c1{width:260px;height:90px;left:-70px;top:70px}.p1 .c2{width:220px;height:80px;right:-80px;top:190px;opacity:.8}
+  .p1 .c3{width:340px;height:130px;left:-60px;bottom:-40px}.p1 .c4{width:280px;height:120px;right:-70px;bottom:10px}
+  .p1 .tagp{position:absolute;left:50%;top:22px;transform:translateX(-50%);padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);color:#fff;font:800 11px Manrope,sans-serif;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap}
+  .p1 .board{position:absolute;left:50%;top:92px;width:252px;height:330px;margin-left:-126px;border-radius:30px;padding:22px 22px 20px;background:#fff;background-image:radial-gradient(rgba(20,20,40,.1) 1.1px,transparent 1.1px);background-size:18px 18px;box-shadow:0 0 0 1px rgba(255,255,255,.9),0 40px 70px rgba(10,70,150,.36);transform:rotate(-4deg);display:flex;flex-direction:column;animation:p1fl 7s ease-in-out infinite}
+  .p1 .board .n{font:400 9px var(--pixel);color:#9a9aab}
+  .p1 .sel{position:relative;align-self:flex-start;margin-top:26px;padding:10px 12px 12px;border:2.5px solid #1e9bff;border-radius:5px;background:rgba(30,155,255,.06)}
+  .p1 .ttl{font-family:var(--pixel);text-transform:uppercase;line-height:1.12;letter-spacing:-.02em}
+  .p1 .ttl .l1{display:block;font-size:58px;color:var(--ink)}.p1 .ttl .l2{display:block;font-size:30px;margin-top:4px;color:var(--blue)}
+  .p1 .hd{position:absolute;width:10px;height:10px;border-radius:3px;background:#fff;border:2.5px solid #1e9bff}
+  .p1 .hd.tl{left:-6px;top:-6px}.p1 .hd.tr{right:-6px;top:-6px}.p1 .hd.bl{left:-6px;bottom:-6px}.p1 .hd.br{right:-6px;bottom:-6px}
+  .p1 .board p{margin-top:22px;font:700 14.5px/1.35 Manrope,sans-serif;color:#33334a}
+  .p1 .board em{margin-top:auto;align-self:flex-start;font:800 12px Manrope,sans-serif;font-style:normal;padding:8px 14px;border-radius:999px;color:#fff;background:linear-gradient(180deg,#ff7cc2,#ff2e97);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 10px 18px rgba(255,46,151,.35)}
+  .p1 .fchip{position:absolute;padding:11px 13px;border-radius:20px;background:rgba(255,255,255,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 #fff,0 16px 30px rgba(10,70,150,.22);display:flex;align-items:center;gap:9px}
+  .p1 .fchip small{font:800 11px Manrope,sans-serif;color:#33334a}
+  .p1 .fchip b{font:800 21px Manrope,sans-serif}.p1 .fchip b.px{font:400 14px var(--pixel);color:var(--pink)}
+  .p1 .pd{display:flex;gap:6px}.p1 .pd i{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 2px 0 rgba(255,255,255,.45)}
+  .p1 .pd i:nth-child(1){background:#ff2e97}.p1 .pd i:nth-child(2){background:#1e9bff}.p1 .pd i:nth-child(3){background:#111114}.p1 .pd i:nth-child(4){background:#fff;box-shadow:inset 0 0 0 1px #dcdce6}
+  .p1 .g1{left:10px;top:74px;transform:rotate(-8deg);flex-direction:column;align-items:flex-start;gap:6px;animation:p1fl 6s ease-in-out infinite .4s}
+  .p1 .g2{right:8px;top:158px;transform:rotate(9deg);animation:p1fl 5.4s ease-in-out infinite 1.1s}
+  .p1 .g3{left:8px;bottom:118px;transform:rotate(7deg);animation:p1fl 6.4s ease-in-out infinite .8s}
+  .p1 .ck{position:absolute;right:18px;bottom:66px;width:96px;height:96px;transform:rotate(-8deg);animation:p1fl 5s ease-in-out infinite .2s}
+  .p1 .ck svg.star8{width:42px;height:42px;color:#e8774b}.p1 .ck small{position:absolute;bottom:9px;font:800 13px Manrope,sans-serif}
+  .p1 .cur{position:absolute;right:6px;bottom:38px;width:42px;filter:drop-shadow(0 8px 12px rgba(255,46,151,.35));animation:p1fl 5s ease-in-out infinite}
+}
+@media (max-width:350px){
+  .p1 .board{width:228px;margin-left:-114px}.p1 .ttl .l1{font-size:52px}.p1 .ttl .l2{font-size:27px}
+  .p1 .g2{right:2px}.p1 .g1{left:4px}
+}
+@media (prefers-reduced-motion:reduce){.p1 *{animation:none!important}}
+@media (max-width:380px){
+  .skills{grid-template-columns:1fr!important}
+  .alg{grid-template-columns:1fr}
+  .toggle-card{width:190px}
+}
+/* hero motion */
+@keyframes inUp{from{opacity:0;translate:0 28px;scale:.95}}
+@keyframes inRise{from{opacity:0;translate:0 80px;scale:.9}}
+@keyframes inDrop{from{opacity:0;translate:0 -46px;scale:.7}}
+@keyframes inPop{from{opacity:0;scale:.3}}
+@keyframes inLeft{from{opacity:0;translate:-70px 0}}
+@keyframes inRight{from{opacity:0;translate:70px 0}}
+@keyframes inCur{from{opacity:0;translate:150px 110px}}
+@keyframes drift{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@keyframes cloudA{from{translate:-22px 0}to{translate:22px 0}}
+@keyframes cloudB{from{translate:18px 0}to{translate:-18px 0}}
+@keyframes selDraw{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(-40px -140px -70px -10px)}}
+.folder-btn{animation:inUp .5s cubic-bezier(.2,.8,.2,1) backwards}
+.folder-btn:nth-child(1){animation-delay:0.56s}
+.folder-btn:nth-child(2){animation-delay:0.62s}
+.folder-btn:nth-child(3){animation-delay:0.68s}
+.folder-btn:nth-child(4){animation-delay:0.74s}
+.folder-btn:nth-child(5){animation-delay:0.80s}
+.folder-btn:nth-child(6){animation-delay:0.86s}
+.folder-btn:nth-child(7){animation-delay:0.92s}
+.folder-btn:nth-child(8){animation-delay:0.98s}
+.folder-btn:nth-child(9){animation-delay:1.04s}
+@media (min-width:721px){
+  .ed-wrap .ed{animation:inUp .8s cubic-bezier(.2,.8,.2,1) 0s backwards}
+  .ed-wrap .ed-kick{animation:inUp .5s cubic-bezier(.2,.8,.2,1) 0.35s backwards}
+  .ed-wrap .sel{animation:selDraw .7s cubic-bezier(.2,.8,.2,1) 0.5s backwards}
+  .ed-wrap .dim{animation:inUp .3s cubic-bezier(.2,.8,.2,1) 1.0s backwards}
+  .ed-wrap .sel h1 .l1{animation:inUp .5s cubic-bezier(.2,.8,.2,1) 0.62s backwards}
+  .ed-wrap .sel h1 .l2{animation:inUp .5s cubic-bezier(.2,.8,.2,1) 0.76s backwards}
+  .ed-wrap .ed-canvas .lead{animation:inUp .6s cubic-bezier(.2,.8,.2,1) 1.0s backwards}
+  .ed-wrap .sel .who{animation:inPop .35s cubic-bezier(.3,1.5,.5,1) 2.0s backwards}
+  .ed-wrap .r1{animation:drift 6s ease-in-out 2.2s infinite,inDrop .6s cubic-bezier(.3,1.5,.5,1) 1.15s backwards}
+  .ed-wrap .r2{animation:drift 5.2s ease-in-out 2.6s infinite,inDrop .6s cubic-bezier(.3,1.5,.5,1) 1.3s backwards}
+  .ed-wrap .r3{animation:drift 6.6s ease-in-out 3s infinite,inDrop .6s cubic-bezier(.3,1.5,.5,1) 1.6s backwards}
+  .ed-wrap .r4{animation:drift 5.6s ease-in-out 2.4s infinite,inDrop .6s cubic-bezier(.3,1.5,.5,1) 1.75s backwards}
+  .ed-wrap .sl.s3{animation:inRise .6s cubic-bezier(.2,.8,.2,1) 1.3s backwards}
+  .ed-wrap .sl.s2{animation:inRise .6s cubic-bezier(.2,.8,.2,1) 1.42s backwards}
+  .ed-wrap .sl.s1{animation:drift 6s ease-in-out 2.8s infinite,inRise .7s cubic-bezier(.3,1.5,.5,1) 1.54s backwards}
+  .ed-wrap .ed-tools b{animation:inPop .35s cubic-bezier(.3,1.5,.5,1) 0.55s backwards}
+  .ed-wrap .ed-side .pn{animation:inUp .5s cubic-bezier(.2,.8,.2,1) 0.6s backwards}
+  .ed-wrap .ed-feat li{animation:inUp .5s cubic-bezier(.2,.8,.2,1) 1.7s backwards}
+  .ed-wrap .sel .cur{animation:float 5s ease-in-out 2.4s infinite,inCur 1s cubic-bezier(.2,.8,.2,1) 1.05s backwards}
+  .ed-wrap .ed-tools b:nth-child(1){animation-delay:0.57s}
+  .ed-wrap .ed-tools b:nth-child(2){animation-delay:0.64s}
+  .ed-wrap .ed-tools b:nth-child(3){animation-delay:0.71s}
+  .ed-wrap .ed-tools b:nth-child(4){animation-delay:0.78s}
+  .ed-wrap .ed-tools b:nth-child(5){animation-delay:0.85s}
+  .ed-wrap #edPal button:nth-child(1){animation:inPop .35s cubic-bezier(.3,1.5,.5,1) 0.93s backwards}
+  .ed-wrap #edPal button:nth-child(2){animation:inPop .35s cubic-bezier(.3,1.5,.5,1) 1.01s backwards}
+  .ed-wrap #edPal button:nth-child(3){animation:inPop .35s cubic-bezier(.3,1.5,.5,1) 1.09s backwards}
+  .ed-wrap #edPal button:nth-child(4){animation:inPop .35s cubic-bezier(.3,1.5,.5,1) 1.17s backwards}
+  .ed-wrap .ed-side .pn:nth-child(1){animation-delay:0.68s}
+  .ed-wrap .ed-side .pn:nth-child(2){animation-delay:0.81s}
+  .ed-wrap .ed-side .pn:nth-child(3){animation-delay:0.94s}
+  .ed-wrap .ed-feat li:nth-child(1){animation-delay:1.70s}
+  .ed-wrap .ed-feat li:nth-child(2){animation-delay:1.80s}
+  .ed-wrap .ed-feat li:nth-child(3){animation-delay:1.90s}
+  .ed-wrap .pp{transition:scale .25s,box-shadow .25s}
+  .ed-wrap .pp:hover{scale:1.07;box-shadow:0 20px 40px rgba(20,20,60,.22)}
+  .ed-wrap .sl{transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+  .ed-wrap .ed-fan:hover .s3{transform:rotate(27deg)}
+  .ed-wrap .ed-fan:hover .s2{transform:rotate(8deg)}
+  .ed-wrap .ed-fan:hover .s1{transform:rotate(-17deg)}
+}
+@media (max-width:720px){
+  .p1{animation:inUp .8s cubic-bezier(.2,.8,.2,1) backwards}
+  .p1 .c1{animation:cloudA 11s ease-in-out infinite alternate}.p1 .c2{animation:cloudB 13s ease-in-out infinite alternate}
+  .p1 .c3{animation:cloudB 15s ease-in-out infinite alternate}.p1 .c4{animation:cloudA 12s ease-in-out infinite alternate}
+  .p1 .tagp{animation:inPop .5s cubic-bezier(.3,1.5,.5,1) .3s backwards}
+  .p1 .board{animation:p1fl 7s ease-in-out 1.5s infinite,inRise 1s cubic-bezier(.3,1.5,.5,1) .3s backwards}
+  .p1 .sel{animation:inPop .5s cubic-bezier(.3,1.5,.5,1) .95s backwards;transform-origin:0 0}
+  .p1 .board p{animation:inUp .5s cubic-bezier(.2,.8,.2,1) 1.2s backwards}
+  .p1 .board em{animation:inPop .4s cubic-bezier(.3,1.5,.5,1) 1.4s backwards}
+  .p1 .g1{animation:p1fl 6s ease-in-out 2s infinite,inLeft .7s cubic-bezier(.3,1.5,.5,1) 1.05s backwards}
+  .p1 .g2{animation:p1fl 5.4s ease-in-out 2.4s infinite,inRight .7s cubic-bezier(.3,1.5,.5,1) 1.2s backwards}
+  .p1 .g3{animation:p1fl 6.4s ease-in-out 2.2s infinite,inLeft .7s cubic-bezier(.3,1.5,.5,1) 1.35s backwards}
+  .p1 .ck{animation:p1fl 5s ease-in-out 2.3s infinite,inPop .55s cubic-bezier(.3,1.5,.5,1) 1.5s backwards}
+  .p1 .cur{animation:p1fl 5s ease-in-out 2.9s infinite,inCur .9s cubic-bezier(.2,.8,.2,1) 1.75s backwards}
+  .p1 .bubble{animation:float 6s ease-in-out 2.2s infinite,inPop .5s cubic-bezier(.3,1.5,.5,1) 1.6s backwards}
+}
+@media (prefers-reduced-motion:reduce){.ed-wrap *,.p1,.p1 *,.folder-btn{animation:none!important}}
+/* hero fits first screen */
+@media (min-width:721px){
+  .short .hero{padding-top:16px}
+  .short .ed-wrap .ed{margin-top:12px}
+  .ed-wrap .ed-body{min-height:calc(540px*var(--k,1))}
+  .ed-wrap .ed-canvas{padding:calc(34px*var(--k,1)) 40px calc(40px*var(--k,1))}
+  .ed-wrap .ed-kick{margin-bottom:calc(44px*var(--k,1))}
+  .ed-wrap .sel{padding:calc(14px*var(--kt,1)) calc(22px*var(--kt,1)) calc(16px*var(--kt,1))}
+  .ed-wrap .sel h1 .l1{font-size:calc(clamp(50px,6.6vw,84px)*var(--kt,1))}
+  .ed-wrap .sel h1 .l2{font-size:calc(clamp(34px,4.5vw,57px)*var(--kt,1))}
+  .ed-wrap .sel .cur{zoom:var(--kt,1)}
+  .ed-wrap .ed-canvas .lead{margin-top:calc(40px*var(--k,1));font-size:max(15px,calc(clamp(19px,1.9vw,23px)*var(--k,1)));max-width:calc(100% - 286px*var(--kd,1))}
+  .ed-wrap .ed-fan,.ed-wrap .ed-refs .pp{zoom:var(--kd,1)}
+  .ed-wrap .tight .r3,.ed-wrap .tight .r4{display:none}
+  .ed-wrap .tight .ed-fan{top:auto;bottom:calc(8px/var(--kd,1))}
+  .ed-wrap .tight .ed-kick{margin-bottom:34px}
+  .ed-wrap .ed-side,.ed-wrap .ed-tools{zoom:var(--k2,1)}
+}
+/* phone hero interactive */
+@keyframes p1ring{0%{opacity:.9;scale:1}100%{opacity:0;scale:1.5}}
+@keyframes p1spark{to{translate:var(--sx) var(--sy2);opacity:0;scale:.4}}
+@keyframes p1flip{0%{rotate:y 0deg}100%{rotate:y 360deg}}
+@media (max-width:720px){
+  .p1{--acc:#1e9bff;touch-action:pan-y}
+  .p1 .sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 7%,transparent);transition:border-color 1.1s ease-in-out,background 1.1s ease-in-out}
+  .p1 .hd{border-color:var(--acc);transition:border-color 1.1s ease-in-out}
+  .p1 .ttl .l2{color:var(--acc)}
+  .p1 .ttl .l1,.p1 .ttl .l2{transition:font-size .45s cubic-bezier(.3,1.3,.5,1),color 1.1s ease-in-out}
+  .p1.mn .ttl{font-family:Manrope,sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .p1.mn .ttl .l1{font-size:66px}.p1.mn .ttl .l2{font-size:42px}
+  .p1 .board{transition:width .5s cubic-bezier(.3,1.3,.5,1),height .5s cubic-bezier(.3,1.3,.5,1),margin-left .5s cubic-bezier(.3,1.3,.5,1),transform .6s cubic-bezier(.2,.8,.2,1);transform:translateY(calc(var(--msc,0)*.06px)) rotate(calc(-4deg + var(--mx,0)*4deg))}
+  .p1.f916 .board{width:200px;height:350px;margin-left:-100px}
+  .p1.f916 .board p{font-size:13.5px}
+  .p1.f916 .g3{bottom:92px}
+  .p1.f916 .ttl .l1{font-size:44px}.p1.f916 .ttl .l2{font-size:22px}
+  .p1.f916.mn .ttl .l1{font-size:50px}.p1.f916.mn .ttl .l2{font-size:31px}
+  .p1.f11 .board{width:270px;height:274px;margin-left:-135px}
+  .p1.f11 .board p{display:none}
+  .p1.f11 .sel{margin-top:18px}
+  .p1 .board.flip{animation:p1flip .8s cubic-bezier(.3,.9,.3,1)}
+  .p1 .g3{transition:bottom .4s,transform .6s cubic-bezier(.2,.8,.2,1),scale .15s}
+  .p1 .fchip{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .6s cubic-bezier(.2,.8,.2,1),scale .15s,box-shadow .2s}
+  .p1 .fchip:active,.p1 .ck:active{scale:.9}
+  .p1 .fchip::after{content:"";position:absolute;inset:-3px;border-radius:22px;border:2px solid #fff;opacity:0;pointer-events:none;animation:p1ring 1.4s ease-out 3.2s 3}
+  .p1.used .fchip::after{animation:none}
+  .p1 .g1{transform:translate(calc(var(--mx,0)*-14px),calc(var(--my,0)*-10px - var(--msc,0)*.16px)) rotate(-8deg)}
+  .p1 .g2{transform:translate(calc(var(--mx,0)*18px),calc(var(--my,0)*12px - var(--msc,0)*.24px)) rotate(9deg)}
+  .p1 .g3{transform:translate(calc(var(--mx,0)*-20px),calc(var(--my,0)*14px - var(--msc,0)*.3px)) rotate(7deg)}
+  .p1 .ck{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .6s cubic-bezier(.2,.8,.2,1),scale .15s;transform:translate(calc(var(--mx,0)*22px),calc(var(--my,0)*16px - var(--msc,0)*.34px)) rotate(-8deg)}
+  .p1 .cl{transition:transform .4s ease-out;transform:translateX(calc(var(--mx,0)*26px))}
+  .p1 .pd i{transition:scale .5s cubic-bezier(.3,1.4,.5,1),box-shadow .5s}
+  .p1 .pd i:nth-child(1){background:#1e9bff}.p1 .pd i:nth-child(2){background:#ff2e97}.p1 .pd i:nth-child(3){background:#111114}.p1 .pd i:nth-child(4){background:#8a5cff;box-shadow:inset 0 2px 0 rgba(255,255,255,.45)}
+  .p1 .pd i.on{scale:1.18;box-shadow:0 0 0 2px #fff,0 0 0 4px currentColor}
+  .p1 .pd i:nth-child(1){color:#1e9bff}.p1 .pd i:nth-child(2){color:#ff2e97}.p1 .pd i:nth-child(3){color:#111114}.p1 .pd i:nth-child(4){color:#8a5cff}
+  .p1 .g2 b{opacity:.38;transition:opacity .2s,scale .2s}.p1 .g2 b.on{opacity:1;scale:1.12}
+  .p1 #p1fmt{display:inline-block;min-width:40px}
+  .p1hint{position:absolute;left:16px;bottom:44px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:800 10.5px Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#1488ee;white-space:nowrap;animation:inPop .5s cubic-bezier(.3,1.5,.5,1) 2.4s backwards;transition:opacity .4s}
+  .p1.used .p1hint{opacity:0}
+  .p1spark{position:absolute;width:16px;height:16px;color:#fff;pointer-events:none;animation:p1spark .8s ease-out forwards;z-index:5}
+}
+@media (min-width:721px){.p1hint{display:none}}
+@media (prefers-reduced-motion:reduce){.p1 .board.flip{animation:none!important}}
+/* what you need */
+.need{margin:26px 0 8px}
+.need-h{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.need-h .step-tag{margin:0}
+.need-h p{font-size:15px;color:var(--ink-2,#55556a)}
+.need-g{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.need-i{display:flex;flex-direction:column;gap:3px;padding:16px 14px 14px;border-radius:22px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.95);box-shadow:var(--shadow);color:var(--ink);text-decoration:none;transition:translate .2s,box-shadow .2s}
+a.need-i:hover{translate:0 -4px;box-shadow:0 18px 36px rgba(255,46,151,.16)}
+.need-i .ne{font-size:26px;line-height:1;margin-bottom:8px}
+.need-i b{font:800 15.5px Manrope,sans-serif}
+.need-i small{font:500 12.5px/1.35 Manrope,sans-serif;color:#6b6b7b}
+.need-i em{margin-top:auto;padding-top:10px;font:700 11.5px Manrope,sans-serif;font-style:normal;color:var(--pink)}
+.need .note{margin-top:12px}
+@media (max-width:980px){.need-g{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:720px){
+  .need{margin-top:18px}
+  .need-h{gap:8px;margin-bottom:10px}.need-h p{font-size:14px}
+  .need-g{grid-template-columns:1fr 1fr;gap:9px}
+  .need-i{padding:13px 12px 12px;border-radius:18px}
+  .need-i .ne{font-size:22px;margin-bottom:6px}.need-i b{font-size:14.5px}.need-i small{font-size:12px}
+}
+.need-toc{margin-bottom:22px}.need-toc .step-tag{margin-bottom:12px}.need-toc .links{margin-top:0}
+@media (max-width:720px){.need-toc .links .btn{font-size:13px;padding:9px 13px}}
+/* ideas gallery */
+.rf-chips{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 6px}
+.rf-chips .chip{flex:none;padding:9px 15px;font-size:13.5px}
+.rf-chips .chip.on{background:linear-gradient(180deg,#ff7cc2,#ff2e97);color:#fff;box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 10px 20px rgba(255,46,151,.3)}
+.rf-group{margin-top:34px}
+.rf-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px}
+.rf-n{flex:none;font:400 22px var(--pixel);color:var(--pink);padding-top:4px}
+.rf-head h3{font:800 24px/1.15 Manrope,sans-serif;letter-spacing:-.01em}
+.rf-head p{margin-top:6px;font-size:15.5px;line-height:1.45;color:#55556a;max-width:640px}
+.rf-where{margin-left:auto;flex:none;padding:7px 13px;border-radius:999px;background:#eaf5ff;color:#1488ee;font:800 11.5px Manrope,sans-serif;white-space:nowrap}
+.rf-grid{columns:4;column-gap:14px}
+.rf-card{display:block;width:100%;margin:0 0 14px;padding:6px;border:0;border-radius:22px;background:#fff;box-shadow:0 0 0 1px rgba(20,20,40,.05),0 14px 30px rgba(20,20,60,.12);cursor:zoom-in;break-inside:avoid;transition:transform .3s cubic-bezier(.3,1.4,.5,1),box-shadow .3s}
+.rf-card img{display:block;width:100%;height:auto;border-radius:17px}
+.rf-card:nth-child(odd){transform:rotate(-1.2deg)}.rf-card:nth-child(even){transform:rotate(1deg)}
+.rf-card:hover{transform:rotate(0) scale(1.04);box-shadow:0 0 0 1px rgba(20,20,40,.05),0 26px 50px rgba(255,46,151,.25);position:relative;z-index:2}
+.rf-group .prompt{margin-top:6px}
+.rf-box{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:24px;background:rgba(15,15,25,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.rf-box[hidden]{display:none}
+.rf-box img{max-width:min(92vw,720px);max-height:88vh;border-radius:22px;box-shadow:0 40px 90px rgba(0,0,0,.5);animation:inPop .3s cubic-bezier(.3,1.3,.5,1)}
+.rf-x,.rf-nav{position:absolute;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;background:rgba(255,255,255,.92);color:#111114;font:400 28px/1 Manrope,sans-serif;display:grid;place-items:center}
+.rf-x{right:18px;top:18px}.rf-nav.prev{left:14px;top:50%;margin-top:-23px}.rf-nav.next{right:14px;top:50%;margin-top:-23px}
+.folder-btn:nth-child(10){animation-delay:1.1s}
+@media (max-width:980px){.rf-grid{columns:3}}
+@media (max-width:720px){
+  .rf-chips{flex-wrap:nowrap;overflow-x:auto;margin:16px -16px 0;padding:4px 16px 8px;scrollbar-width:none}
+  .rf-chips::-webkit-scrollbar{display:none}
+  .rf-group{margin-top:26px}
+  .rf-head{flex-wrap:wrap;gap:6px 12px;margin-bottom:12px}
+  .rf-n{font-size:17px}.rf-head h3{font-size:20px}.rf-head p{font-size:14.5px}
+  .rf-where{margin-left:0;order:3}
+  .rf-grid{columns:2;column-gap:10px}
+  .rf-card{margin-bottom:10px;padding:4px;border-radius:17px}.rf-card img{border-radius:13px}
+  .rf-box{padding:12px}.rf-nav{width:40px;height:40px}
+}
+/* ideas board */
+.rf-board{margin-top:24px;padding:34px 22px 26px;border-radius:34px;display:grid;grid-template-columns:repeat(4,1fr);gap:34px 14px;background:#fff;background-image:radial-gradient(rgba(20,20,40,.12) 1.2px,transparent 1.2px);background-size:22px 22px;border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(20,20,40,.06),0 30px 70px rgba(255,46,151,.12)}
+.rf-stack{position:relative;border:0;background:none;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;align-items:center;gap:18px;padding:0;-webkit-tap-highlight-color:transparent}
+.rf-pile{position:relative;width:150px;height:190px;display:block}
+.rf-pile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:16px;border:5px solid #fff;box-shadow:0 12px 26px rgba(20,20,60,.2);transition:transform .45s cubic-bezier(.3,1.4,.5,1),box-shadow .3s}
+.rf-pile .c1{z-index:4;transform:rotate(-3deg)}.rf-pile .c2{z-index:3;transform:rotate(4deg) translate(6px,2px)}.rf-pile .c3{z-index:2;transform:rotate(-7deg) translate(-7px,4px)}.rf-pile .c4{z-index:1;transform:rotate(9deg) translate(9px,6px)}
+.rf-stack:hover .c1,.rf-stack:focus-visible .c1,.rf-stack.peek .c1{transform:translate(-58px,-10px) rotate(-12deg) scale(1.04)}
+.rf-stack:hover .c2,.rf-stack:focus-visible .c2,.rf-stack.peek .c2{transform:translate(-18px,-22px) rotate(-3deg) scale(1.04)}
+.rf-stack:hover .c3,.rf-stack:focus-visible .c3,.rf-stack.peek .c3{transform:translate(22px,-20px) rotate(5deg) scale(1.04)}
+.rf-stack:hover .c4,.rf-stack:focus-visible .c4,.rf-stack.peek .c4{transform:translate(60px,-6px) rotate(13deg) scale(1.04)}
+.rf-stack.n3:hover .c3,.rf-stack.n3.peek .c3{transform:translate(52px,-8px) rotate(11deg) scale(1.04)}
+.rf-stack.n3:hover .c2,.rf-stack.n3.peek .c2{transform:translate(0,-24px) rotate(1deg) scale(1.04)}
+.rf-stack:hover{z-index:5}
+.rf-stack:hover img{box-shadow:0 22px 40px rgba(255,46,151,.28)}
+.rf-pin{position:absolute;left:50%;top:-13px;width:24px;height:24px;margin-left:-12px;border-radius:50%;z-index:6;background:radial-gradient(circle at 32% 28%,#fff 0 10%,#ffc4e3 26%,#ff2e97 66%,#c40e6c 100%);box-shadow:0 6px 10px rgba(255,46,151,.4);transition:transform .3s}
+.rf-stack:nth-child(even) .rf-pin{background:radial-gradient(circle at 32% 28%,#fff 0 10%,#c4e8ff 26%,#3aa9ff 66%,#0f78d6 100%);box-shadow:0 6px 10px rgba(30,155,255,.4)}
+.rf-stack:hover .rf-pin{transform:translateY(-16px) scale(.85)}
+.rf-lab{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.rf-lab em{font:400 11px var(--pixel);font-style:normal;color:var(--pink)}
+.rf-lab b{font:800 15.5px/1.2 Manrope,sans-serif;margin-top:4px}
+.rf-lab small{font:700 11.5px Manrope,sans-serif;color:#9a9aab}
+.rf-stack.on .rf-lab b{color:var(--pink)}
+.rf-hint{margin-top:14px;text-align:center;font-size:14px;color:#8a8a99}
+.rf-tools{justify-content:center;margin-top:14px}
+.rf-tools[hidden],.rf-group[hidden]{display:none}
+.rf-group{animation:inUp .5s cubic-bezier(.2,.8,.2,1)}
+.rf-group .rf-card{animation:inUp .5s cubic-bezier(.2,.8,.2,1) backwards}
+.rf-group .rf-card:nth-child(2){animation-delay:.06s}.rf-group .rf-card:nth-child(3){animation-delay:.12s}.rf-group .rf-card:nth-child(4){animation-delay:.18s}.rf-group .rf-card:nth-child(5){animation-delay:.24s}.rf-group .rf-card:nth-child(n+6){animation-delay:.3s}
+@media (max-width:980px){.rf-board{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:720px){
+  .rf-board{grid-template-columns:1fr 1fr;padding:28px 10px 20px;gap:30px 6px;border-radius:26px}
+  .rf-pile{width:112px;height:142px}.rf-pile img{border-width:4px;border-radius:13px}
+  .rf-stack.peek .c1{transform:translate(-26px,-8px) rotate(-11deg)}.rf-stack.peek .c2{transform:translate(-8px,-16px) rotate(-3deg)}
+  .rf-stack.peek .c3{transform:translate(10px,-14px) rotate(5deg)}.rf-stack.peek .c4{transform:translate(28px,-4px) rotate(12deg)}
+  .rf-stack.n3.peek .c3{transform:translate(24px,-6px) rotate(10deg)}.rf-stack.n3.peek .c2{transform:translate(0,-16px) rotate(1deg)}
+  .rf-lab b{font-size:13.5px}
+  .rf-hint{font-size:13px}
+}
+@media (min-width:861px){.folders{padding-left:10px;padding-right:10px}.folder-btn{padding-left:2px;padding-right:2px;min-width:0}.folder-btn .flabel{font-size:12.5px}.folder-btn .ficon{transform:scale(.92)}}
+/* format diagrams */
+.fm-over{--u:.115px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px 26px;margin:18px 0 14px}
+.fm-over figure,.fm-pair figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+.fm-o{width:calc(var(--w)*var(--u));height:calc(var(--h)*var(--u));border-radius:14px;display:grid;place-items:center;background:linear-gradient(165deg,#ffd1e8,#ff8ccb);border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(255,46,151,.35),0 12px 24px rgba(255,46,151,.18)}
+.fm-o.b{background:linear-gradient(165deg,#d6efff,#7cc4ff);box-shadow:0 0 0 1.5px rgba(30,155,255,.35),0 12px 24px rgba(30,155,255,.18)}
+.fm-o span{font:400 13px var(--pixel);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.12)}
+figcaption{font:500 12px 'JetBrains Mono',monospace;color:#8a8a99;text-align:center}
+figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);margin-bottom:2px}
+.fm-wrap{display:flex;gap:30px;align-items:center;margin-top:18px}
+.fm-wrap.col{flex-direction:column;align-items:stretch;gap:18px}
+.fm-pair{display:flex;gap:22px;flex:none}
+.fm-d{position:relative;flex:none;width:270px;aspect-ratio:calc(var(--w)/var(--h));border-radius:16px;background:#fff;background-image:radial-gradient(rgba(20,20,40,.1) 1px,transparent 1px);background-size:14px 14px;box-shadow:0 0 0 2px #111114,0 18px 36px rgba(20,20,60,.14)}
+.fm-d.s{width:170px}
+.fm-d.w{width:100%;max-width:620px;align-self:center}
+.fm-d>i{position:absolute;display:block}
+.fm-safe{border:2px dashed var(--pink);border-radius:8px}
+.fm-t{height:5.4%;border-radius:4px;background:#111114}
+.fm-d.s .fm-t{height:3.4%}.fm-d.w .fm-t{height:6.5%}
+.fm-l{height:2.2%;border-radius:3px;background:#c9c9d6}
+.fm-d.w .fm-l{height:3.2%}
+.fm-img{border-radius:10px;background:linear-gradient(160deg,#d6efff,#7cc4ff)}
+.fm-ui,.fm-cut{background:repeating-linear-gradient(45deg,rgba(30,155,255,.3) 0 5px,rgba(30,155,255,.08) 5px 10px)}
+.fm-cut{top:0;bottom:0;width:3.2%}.fm-cut.l{left:0;border-radius:14px 0 0 14px}.fm-cut.r{right:0;border-radius:0 14px 14px 0}
+.fm-d.s .fm-ui:first-child{border-radius:14px 14px 0 0}
+.fm-crop{border-top:2px solid #111114;border-bottom:2px solid #111114;border-style:dashed none}
+.fm-num{position:absolute;font:400 9px var(--pixel);font-style:normal;color:#9a9aab}
+.fm-pin{position:absolute;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#ff7cc2,#ff2e97);color:#fff;font:800 12px Manrope,sans-serif;box-shadow:0 0 0 2px #fff,0 4px 8px rgba(255,46,151,.35);z-index:2}
+.fm-leg{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;flex:1}
+.fm-wrap.col .fm-leg{display:grid;grid-template-columns:1fr 1fr;gap:9px 24px}
+.fm-leg li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.4}
+.fm-leg li i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fff0f8;color:var(--pink);font:800 12px Manrope,sans-serif;font-style:normal}
+@media (max-width:720px){
+  .fm-over{--u:.07px;gap:16px 14px;justify-content:space-between}
+  .fm-o span{font-size:10px}
+  figcaption{font-size:10.5px}figcaption b{font-size:12.5px}
+  .fm-wrap{flex-direction:column;align-items:stretch;gap:18px}
+  .fm-d{width:230px;align-self:center}.fm-d.s{width:132px}
+  .fm-pair{justify-content:center;gap:26px}
+  .fm-wrap.col .fm-leg{grid-template-columns:1fr}
+  .fm-leg li{font-size:14px}
+  .fm-pin{width:20px;height:20px;font-size:11px}
+}
+.soon{margin-top:26px;position:relative}.soon-tag{display:inline-block;margin-bottom:10px;padding:6px 12px;border-radius:999px;background:#111114;color:#fff;font:800 10.5px Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase}
+/* before/after */
+.ba-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ba{padding:18px 16px 16px;border-radius:24px;background:var(--glass);border:1px solid rgba(255,255,255,.95);box-shadow:var(--shadow)}
+.ba-p{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.ba-ar{font:800 18px Manrope,sans-serif;color:#b9b9c6}
+.ba-b{position:relative;width:92px;aspect-ratio:4/5;border-radius:11px;background:#fff;overflow:hidden}
+.ba-b.x{box-shadow:0 0 0 2px #d9d9e3}.ba-b.v{box-shadow:0 0 0 2px var(--pink),0 10px 20px rgba(255,46,151,.2)}
+.ba-b>i{position:absolute;display:block;border-radius:2px}
+.ba-b::after{position:absolute;right:5px;bottom:5px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:800 11px Manrope,sans-serif;color:#fff}
+.ba-b.x::after{content:"×";background:#b9b9c6}.ba-b.v::after{content:"✓";background:var(--pink)}
+.ba-f{display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:2px 8px;padding:6px}
+.ba-f b{font-size:22px;line-height:1.2;color:#111114}.ba-f b.px{font:400 15px var(--pixel);color:var(--pink);width:100%;text-align:center}
+.ba h4{font:800 15.5px Manrope,sans-serif}.ba p{margin-top:4px;font-size:13.5px;line-height:1.4;color:#6b6b7b}
+.ba-grid+.pills{margin-top:14px}
+@media (max-width:860px){.ba-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:720px){.ba-grid{gap:10px}.ba{padding:14px 10px 12px;border-radius:20px}.ba-b{width:62px;border-radius:8px}.ba-p{gap:6px}.ba-f b{font-size:15px}.ba-f b.px{font-size:11px}.ba h4{font-size:14px}.ba p{font-size:12.5px}}
+.learn{margin-bottom:24px}.learn .step-tag{margin-bottom:12px}
+.learn-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.learn-i{padding:16px 16px 15px;border-radius:22px;background:var(--glass);border:1px solid rgba(255,255,255,.95);box-shadow:var(--shadow)}
+.learn-i em{font:400 11px var(--pixel);font-style:normal;color:var(--pink)}
+.learn-i b{display:block;margin-top:8px;font:800 16px/1.25 Manrope,sans-serif}
+.learn-i p{margin-top:5px;font-size:13.5px;line-height:1.45;color:#6b6b7b}
+@media (max-width:860px){.learn-g{grid-template-columns:1fr 1fr}}
+@media (max-width:720px){.learn-g{gap:9px}.learn-i{padding:13px 12px;border-radius:18px}.learn-i b{font-size:14.5px}.learn-i p{font-size:12.5px}}
+.rf-boxget{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);white-space:nowrap}
+.rf-group .links{margin-top:6px}
+/* ideas: calm grid, no jitter */
+.rf-grid{columns:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.rf-group .rf-card,.rf-group .rf-card:nth-child(odd),.rf-group .rf-card:nth-child(even){margin:0;transform:none;animation:none;position:static;aspect-ratio:4/5;overflow:hidden;transition:translate .3s ease,box-shadow .3s ease}
+.rf-group .rf-card img{width:100%;height:100%;object-fit:cover;transition:scale .5s ease}
+.rf-group .rf-card:hover{transform:none;translate:0 -4px;position:static;z-index:auto;box-shadow:0 0 0 1px rgba(20,20,40,.05),0 20px 40px rgba(255,46,151,.2)}
+.rf-group .rf-card:hover img{scale:1.03}
+.rf-group{animation:none}
+@media (max-width:980px){.rf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){.rf-grid{grid-template-columns:1fr 1fr;gap:10px}.rf-group .rf-card{margin:0}}
+@media (hover:none){.rf-group .rf-card:hover{translate:none}.rf-group .rf-card:hover img{scale:1}}
+.seam-d{position:relative;display:flex;height:112px;max-width:520px;margin:16px 0;border-radius:14px;overflow:hidden;box-shadow:0 0 0 2px #111114,0 14px 28px rgba(20,20,60,.14);background:linear-gradient(100deg,#ffd1e8 0%,#ff7cc2 30%,#7cc4ff 70%,#d6efff 100%)}
+.seam-d i{position:absolute;left:8%;right:8%;top:50%;height:34px;margin-top:-17px;border-radius:999px;background:rgba(255,255,255,.75)}
+.seam-d b{position:relative;flex:1;display:grid;place-items:center;font:400 14px var(--pixel);color:#111114}
+.seam-d b+b{border-left:2px dashed #111114}
+.seam-d em{position:absolute;right:8px;bottom:6px;font:500 10.5px 'JetBrains Mono',monospace;font-style:normal;color:#111114}
+.crsel-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.crsel-strip img{flex:none;width:170px;aspect-ratio:4/5;object-fit:cover;border-radius:14px;box-shadow:0 0 0 1px rgba(20,20,40,.06),0 10px 22px rgba(20,20,60,.12);scroll-snap-align:start}
+@media (max-width:720px){.crsel-strip img{width:132px}}
+.folder-btn:nth-child(11){animation-delay:1.16s}
+@media (min-width:861px){.folder-btn .flabel{font-size:11.5px;padding:2px 4px}.folder-btn .ficon{transform:scale(.86)}}
+@media (min-width:861px){.learn-g{grid-template-columns:repeat(4,1fr)}}
+.shot{margin:16px 0 6px}.shot img{display:block;width:100%;border-radius:16px;box-shadow:0 0 0 1px rgba(20,20,40,.08),0 14px 30px rgba(20,20,60,.14)}.shot figcaption{margin-top:8px;text-align:left;font:600 13px Manrope,sans-serif;color:#6b6b7b}
+.vid{margin:16px 0 4px;max-width:340px}.vid video{display:block;width:100%;border-radius:20px;background:#111114;box-shadow:0 0 0 1px rgba(20,20,40,.08),0 18px 36px rgba(20,20,60,.18)}.vid figcaption{margin-top:8px;text-align:left;font:600 13px Manrope,sans-serif;color:#6b6b7b}
+/* live carousel card */
+.live-card{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:30px;align-items:center}
+.live-ph{display:flex;flex-direction:column;align-items:center;gap:12px}
+.phone-f{position:relative;width:230px;padding:9px 9px 30px;border-radius:38px;background:#111114;box-shadow:0 0 0 2px #2a2a33,0 26px 50px rgba(20,20,60,.28);transform:rotate(3deg);animation:p1fl 6s ease-in-out infinite}
+.phone-f video{display:block;width:100%;aspect-ratio:8/9;object-fit:cover;border-radius:28px 28px 10px 10px;background:#fff}
+.phone-f .isl{position:absolute;left:50%;top:17px;width:64px;height:18px;margin-left:-32px;border-radius:12px;background:#111114;z-index:2}
+.ph-dots{position:absolute;left:0;right:0;bottom:11px;display:flex;justify-content:center;gap:5px}
+.ph-dots u{width:6px;height:6px;border-radius:50%;background:#55555f}.ph-dots u.on{background:#1e9bff}
+.live-cap{font:700 20px/1 Caveat,cursive;color:#55556a;transform:rotate(-2deg)}
+@media (max-width:860px){.live-card{grid-template-columns:1fr;gap:22px}.live-ph{order:-1}.phone-f{width:200px}}
+@media (prefers-reduced-motion:reduce){.phone-f{animation:none}}
+.yt{margin:4px 0 0}.yt-in{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#111114;box-shadow:0 0 0 1px rgba(20,20,40,.08),0 18px 36px rgba(20,20,60,.16)}.yt-in iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.yt figcaption{margin-top:8px;text-align:left;font:600 13px Manrope,sans-serif;color:#6b6b7b}.yt+.tbl-wrap{margin-top:16px}
+@media (min-width:861px){.learn-g{grid-template-columns:repeat(4,1fr)}.need-g.need4{grid-template-columns:repeat(4,1fr)}}
+.skills .skill{min-width:0}.skill .cmd{min-width:0;max-width:100%}.skill .cmd code{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ytl{display:grid;grid-template-columns:38fr 62fr;gap:10px;margin-top:14px;aspect-ratio:16/7;max-width:560px}.ytl>div{position:relative;border-radius:16px;background:#fff;box-shadow:0 0 0 2px #111114;padding:12px;display:flex;flex-direction:column;gap:8px;justify-content:flex-end}.ytl-a i{position:absolute;left:50%;top:22%;width:44%;aspect-ratio:1;margin-left:-22%;border-radius:50%;background:linear-gradient(165deg,#ffd1e8,#ff7cc2)}.ytl-b i{display:block;height:9px;border-radius:5px;background:#cfe9ff;width:80%}.ytl-b i.s{width:50%}.ytl span{font:800 11px Manrope,sans-serif;color:#6b6b7b}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#ff7cc2"/><stop offset="1" stop-color="#1e9bff"/></linearGradient>
+    <linearGradient id="fbB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aaef0"/><stop offset="1" stop-color="#3b8fdc"/></linearGradient>
+    <linearGradient id="ffB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fcbff"/><stop offset=".12" stop-color="#76bdfb"/><stop offset="1" stop-color="#4ea4ef"/></linearGradient>
+    <linearGradient id="fbP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6fb4"/><stop offset="1" stop-color="#e81d82"/></linearGradient>
+    <linearGradient id="ffP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb1d8"/><stop offset=".12" stop-color="#ff8cc6"/><stop offset="1" stop-color="#ff4fa6"/></linearGradient>
+  </defs>
+  <symbol id="fback" viewBox="0 0 96 78"><path d="M7 4h26c2.2 0 4.2 1 5.5 2.8L42 11h47a7 7 0 0 1 7 7v53a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7V11a7 7 0 0 1 7-7z"/></symbol>
+  <symbol id="ffront" viewBox="0 0 96 78"><path d="M0 26a7 7 0 0 1 7-7h82a7 7 0 0 1 7 7v45a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7z"/></symbol>
+  <symbol id="star" viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0z" fill="currentColor"/></symbol>
+  <symbol id="play" viewBox="0 0 24 24"><path d="M6 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L7.5 3.64A1 1 0 0 0 6 4.5z" fill="currentColor"/></symbol>
+  <symbol id="chat" viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="currentColor"/><path d="M7 8h10M7 12h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></g></symbol>
+  <symbol id="card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" fill="currentColor"/><path d="M2 10h20" stroke="#fff" stroke-width="2"/><path d="M6 15h5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" fill="currentColor"/></symbol>
+  <symbol id="gear" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 4c0-.6-.1-1.2-.2-1.7l2-1.6-2-3.4-2.4 1a8 8 0 0 0-3-1.7L15 2h-4l-.4 2.6a8 8 0 0 0-3 1.7l-2.4-1-2 3.4 2 1.6a8 8 0 0 0 0 3.4l-2 1.6 2 3.4 2.4-1a8 8 0 0 0 3 1.7L11 22h4l.4-2.6a8 8 0 0 0 3-1.7l2.4 1 2-3.4-2-1.6c.1-.5.2-1.1.2-1.7z" fill="currentColor"/></symbol>
+  <symbol id="folder" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="currentColor"/></symbol>
+  <symbol id="plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="pen" viewBox="0 0 24 24"><path d="M15.5 3.5l5 5L8 21H3v-5z" fill="currentColor"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3" fill="currentColor"/><path d="M8 8h8M8 12h8M8 16h5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 11v6M12 7.5v.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.6L6 21z" fill="currentColor"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="star8" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></g></symbol>
+</svg>
+
+<div class="progress"><i id="prog"></i></div>
+
+<div class="bar"><div class="bar-in">
+  <div class="brand">НЕЙРО<em>ПЕДАЛИРОВАНИЕ</em></div>
+  <nav class="nav" id="nav">
+    <a href="#l1" data-go="1">Папка</a><a href="#l2" data-go="2">Инструменты</a><a href="#l3" data-go="3">Скиллы</a><a href="#l4" data-go="4">Исходник</a><a href="#l5" data-go="5">Стиль</a><a href="#l7" data-go="7">Сториборд</a><a href="#l8" data-go="8">Монтаж</a><a href="#l10" data-go="10">Правки</a><a href="#l11" data-go="11">YouTube</a><a href="#l6" data-go="6">Словарь</a>
+  </nav>
+  <a class="count" href="#finish" title="Общий прогресс"><b id="cnt">0%</b> готово</a>
+</div></div>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="meta">
+    <span class="gpill">воркбук / 04</span>
+    <div class="meta-tags"><span>Claude Code</span><span>Remotion</span><span>Reels</span><svg><use href="#star"/></svg></div>
+  </div>
+
+  <div class="ed-wrap">
+  <div class="ed" id="ed">
+    <div class="ed-bar"><span class="lights"><i></i><i></i><i></i></span><span class="ed-title">воркбук-04 · обложка · 1080 × 1920</span><span class="ed-zoom">100%</span></div>
+    <div class="ed-body">
+      <div class="ed-tools" aria-hidden="true">
+        <b class="on"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.6L10 19z" fill="currentColor"/></svg></b>
+        <b><svg><use href="#pen"/></svg></b>
+        <b class="tx">T</b>
+        <b><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/></svg></b>
+        <b><svg><use href="#heart"/></svg></b>
+      </div>
+      <div class="ed-canvas">
+        <span class="ed-kick">Свой ИИ-монтажёр</span>
+        <div class="sel"><h1><span class="l1">AI</span><span class="l2">монтаж</span></h1><i class="hd tl"></i><i class="hd tr"></i><i class="hd bl"></i><i class="hd br"></i><span class="dim" id="edDim">заголовок · Press Start 2P</span><svg class="cur" viewBox="0 0 24 24"><path d="M3 2l17 9-7.5 1.8L9 20z" fill="#ffd1e8" stroke="#ff2e97" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <p class="lead">Свой ИИ-монтажёр в Claude <svg><use href="#star"/></svg><br>все промпты и скиллы в одном месте</p>
+        <div class="ed-fan" data-layer="fan" aria-hidden="true">
+          <div class="sl s3"><span class="n">03</span><b class="big">Aa</b><i class="ln w80"></i><i class="ln w60"></i></div>
+          <div class="sl s2"><span class="n">02</span><i class="ph"></i><i class="ln w90"></i><i class="ln w60"></i></div>
+          <div class="sl s1"><span class="n">01</span><b class="ttl">Твой<br>ролик</b><span class="go">листай →</span></div>
+        </div>
+        <div class="ed-refs" data-layer="refs" aria-hidden="true">
+          <div class="pp r1"><i class="tape"></i><div class="swt"><i class="c1"></i><i class="c2"></i><i class="c3"></i></div><span class="cap">палитра</span></div>
+          <div class="pp r2"><i class="pin"></i><b class="px">Aa</b><span class="cap">шрифт</span></div>
+          <div class="pp r3"><i class="tape"></i><div class="wide"><i></i><i></i><u></u></div><span class="cap">сториборд</span></div>
+          <div class="pp r4"><i class="pin"></i><div class="phone"><i></i></div><span class="cap">рилс 9:16</span></div>
+        </div>
+      </div>
+      <div class="ed-side">
+        <div class="pn"><span class="pt">Палитра · нажми</span><div class="swt" id="edPal">
+          <button type="button" class="on" style="--c:#1e9bff" aria-label="Голубой"></button><button type="button" style="--c:#ff2e97" aria-label="Розовый"></button><button type="button" style="--c:#111114" aria-label="Чёрный"></button><button type="button" style="--c:#8a5cff" aria-label="Сиреневый"></button></div><code id="edHex">#1E9BFF</code></div>
+        <div class="pn"><span class="pt">Шрифты</span><div class="fnt" id="edFnt"><button type="button" class="px on" data-f="px">Aa</button><button type="button" data-f="mn">Aa</button></div></div>
+        <div class="pn"><span class="pt">Слои</span>
+          <div class="ly on"><svg><use href="#pen"/></svg>Заголовок</div>
+          <div class="ly"><svg><use href="#heart"/></svg>Референсы<button class="sw on" type="button" data-toggle="refs" aria-label="Показать референсы"></button></div>
+          <div class="ly"><svg><use href="#list"/></svg>Кадры<button class="sw on" type="button" data-toggle="fan" aria-label="Показать кадры"></button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="ed-feat">
+    <li><svg><use href="#play"/></svg>8 шагов до своего ИИ-монтажёра</li>
+    <li><svg><use href="#chat"/></svg>Все промпты и скиллы в одном месте</li>
+    <li><svg><use href="#star"/></svg>Монтаж одним промптом</li>
+  </ul>
+  </div>
+
+  <div class="p1 f916" id="p1">
+    <i class="cl c1"></i><i class="cl c2"></i><i class="cl c3"></i><i class="cl c4"></i>
+    <span class="tagp">Свой ИИ-монтажёр</span>
+    <div class="board"><span class="n">01 / 08</span>
+      <div class="sel"><div class="ttl"><span class="l1">AI</span><span class="l2">монтаж</span></div><i class="hd tl"></i><i class="hd tr"></i><i class="hd bl"></i><i class="hd br"></i></div>
+      <p>Сториборд, монтаж,<br>правки и экспорт</p>
+      <em>листай →</em>
+    </div>
+    <button type="button" class="fchip g1" data-act="color" aria-label="Сменить цвет"><span class="pd"><i class="on"></i><i></i><i></i><i></i></span><small>палитра</small></button>
+    <button type="button" class="fchip g2" data-act="font" aria-label="Сменить шрифт"><b class="px on">Aa</b><b class="mn">Aa</b></button>
+    <button type="button" class="fchip g3" data-act="format" aria-label="Сменить формат"><b id="p1fmt">9:16</b><small>формат</small></button>
+    <div class="key ck" data-act="magic" role="button" tabindex="0" aria-label="Claude, подбери стиль"><svg class="star8"><use href="#star8"/></svg><small>Claude</small></div>
+    <svg class="cur" viewBox="0 0 24 24"><path d="M3 2l17 9-7.5 1.8L9 20z" fill="#ffd1e8" stroke="#ff2e97" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <span class="bubble" style="width:26px;height:26px;left:40%;bottom:9%"></span>
+  </div>
+
+  <div class="marquee" aria-hidden="true"><div class="track">
+    <span>Сториборд <svg><use href="#star"/></svg> Таймкоды <svg><use href="#star"/></svg> Монтаж <svg><use href="#star"/></svg> Моушн-графика <svg><use href="#star"/></svg> Субтитры <svg><use href="#star"/></svg> Правки <svg><use href="#star"/></svg> Экспорт <svg><use href="#star"/></svg></span>
+    <span>Сториборд <svg><use href="#star"/></svg> Таймкоды <svg><use href="#star"/></svg> Монтаж <svg><use href="#star"/></svg> Моушн-графика <svg><use href="#star"/></svg> Субтитры <svg><use href="#star"/></svg> Правки <svg><use href="#star"/></svg> Экспорт <svg><use href="#star"/></svg></span>
+  </div></div>
+
+  <div class="finder" id="folders">
+    <div class="finder-bar"><span class="lights"><i></i><i></i><i></i></span><span class="finder-title"><svg><use href="#folder"/></svg>Воркбук 04 — AI-монтаж</span><span class="finder-count">11 папок</span></div>
+    <div class="folders">
+      <button class="folder-btn" data-go="1" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#folder"/></svg></span>
+        <span class="flabel">Папка</span><span class="fn">Шаг 01</span>
+        <span class="fbar"><i data-fbar="1"></i></span>
+      </button>
+      <button class="folder-btn" data-go="2" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#gear"/></svg></span>
+        <span class="flabel">Инструменты</span><span class="fn">Шаг 02</span>
+        <span class="fbar"><i data-fbar="2"></i></span>
+      </button>
+      <button class="folder-btn" data-go="3" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#star"/></svg></span>
+        <span class="flabel">Скиллы</span><span class="fn">Шаг 03</span>
+        <span class="fbar"><i data-fbar="3"></i></span>
+      </button>
+      <button class="folder-btn" data-go="4" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#play"/></svg></span>
+        <span class="flabel">Исходник</span><span class="fn">Шаг 04</span>
+        <span class="fbar"><i data-fbar="4"></i></span>
+      </button>
+      <button class="folder-btn" data-go="5" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#pen"/></svg></span>
+        <span class="flabel">Стиль</span><span class="fn">Шаг 05</span>
+        <span class="fbar"><i data-fbar="5"></i></span>
+      </button>
+      <button class="folder-btn" data-go="7" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#list"/></svg></span>
+        <span class="flabel">Сториборд</span><span class="fn">Шаг 06</span>
+        <span class="fbar"><i data-fbar="7"></i></span>
+      </button>
+      <button class="folder-btn" data-go="8" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#bolt"/></svg></span>
+        <span class="flabel">Монтаж</span><span class="fn">Шаг 07</span>
+        <span class="fbar"><i data-fbar="8"></i></span>
+      </button>
+      <button class="folder-btn" data-go="10" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#heart"/></svg></span>
+        <span class="flabel">Правки</span><span class="fn">Шаг 08</span>
+        <span class="fbar"><i data-fbar="10"></i></span>
+      </button>
+      <button class="folder-btn" data-go="11" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#globe"/></svg></span>
+        <span class="flabel">YouTube</span><span class="fn">Бонус</span>
+        <span class="fbar"><i data-fbar="11"></i></span>
+      </button>
+      <button class="folder-btn" data-go="6" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#chat"/></svg></span>
+        <span class="flabel">Словарь</span><span class="fn">24 слова</span>
+        <span class="fbar" style="visibility:hidden"><i></i></span>
+      </button>
+      <button class="folder-btn" data-go="9" type="button">
+        <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#bookmark"/></svg></span>
+        <span class="flabel">Сохранённое</span><span class="fn" id="favCount">0 промптов</span>
+        <span class="fbar" style="visibility:hidden"><i></i></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="lessons">
+
+<section class="lesson on" data-lesson="1" id="l1">
+  <div class="sec-head"><div class="key num">01</div><div><span class="kicker">Шаг 1 из 8 · 10 минут</span><h2>Рабочая <em>папка</em></h2></div></div>
+  <p class="sub">Монтажный стол для Claude — <b>всё в одном месте.</b></p>
+
+<div id="need" class="need rv">
+  <div class="learn"><span class="step-tag">Чему ты научишься</span>
+    <div class="learn-g">
+      <div class="learn-i"><em>01</em><b>Собрать рабочее место</b><p>Папка, инструменты и скиллы — один раз и надолго.</p></div>
+      <div class="learn-i"><em>02</em><b>Задать свой стиль</b><p>Claude разбирает твои ролики и собирает гайд по стилю.</p></div>
+      <div class="learn-i"><em>03</em><b>Делать сториборд</b><p>План ролика по секундам, который правится быстрее, чем видео.</p></div>
+      <div class="learn-i"><em>04</em><b>Монтировать и править словами</b><p>Один промпт на монтаж, дальше — правки с таймкодами.</p></div>
+    </div>
+  </div>
+  <div class="need-h"><span class="step-tag">Что понадобится</span><p>8 шагов до своего ИИ-монтажёра. Жми «Скопировать» и вставляй в Claude Code.</p></div>
+  <div class="need-g need4">
+    <div class="need-i"><span class="ne">💻</span><b>Компьютер</b><small>Mac или Windows</small></div>
+    <a class="need-i" href="https://claude.ai/download" target="_blank" rel="noopener"><span class="ne">✳️</span><b>Claude</b><small>приложение с вкладкой Code</small><em>claude.ai/download ↗</em></a>
+    <div class="need-i"><span class="ne">🎬</span><b>Исходник</b><small>озвучка или видео</small></div>
+    <a class="need-i" href="https://www.pinterest.com" target="_blank" rel="noopener"><span class="ne">📌</span><b>Референсы</b><small>2–5 примеров стиля</small><em>pinterest.com ↗</em></a>
+  </div>
+  <div class="note b"><svg><use href="#info"/></svg><span>Нужна подписка Claude <b>с доступом к Claude Code</b>. Как оплатить из России — в <a href="https://katrinivanova0616-sys.github.io/workbook-01/#lesson-1" target="_blank" rel="noopener"><b>воркбуке 01, урок 1</b></a>.</span></div>
+</div>
+
+  <div class="block"><span class="step-tag">Как это устроено</span>
+<div class="card glass b rv"><h3><span class="dot"></span>Claude — не монтажная программа</h3><p>Сам по себе он умеет только <b>писать код</b>. Поэтому мы даём ему три вещи:</p><div class="tbl-wrap"><table class="tbl"><tr><th>Что</th><th>Зачем</th></tr><tr><td><b>Инструменты</b></td><td>чтобы он мог резать, анимировать и рендерить</td></tr><tr><td><b>Скиллы</b></td><td>чтобы делал это качественно, а не «как получится»</td></tr><tr><td><b>Твой стиль и сториборд</b></td><td>чтобы ролик был твоим, а не «в стиле Claude»</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Самое долгое — первая настройка. Потом достаточно записать озвучку или видео и положить в папку.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Структура папки</span>
+<div class="card glass rv"><p>Монтажный стол для Claude — всё в одном месте.</p><div class="tbl-wrap"><table class="tbl"><tr><th>Папка</th><th>Что в ней</th></tr><tr><td><code>01_исходники</code></td><td>озвучка, видео, картинки</td></tr><tr><td><code>02_референсы</code></td><td>примеры стиля, сториборд</td></tr><tr><td><code>03_экспорт</code></td><td>готовые ролики</td></tr></table></div><div class="tabs" role="tablist"><button class="tab on" data-tab="fm" type="button">Mac</button><button class="tab" data-tab="fw" type="button">Windows</button></div><div class="pane on" data-pane="fm"><ol class="steps"><li>Кликни на рабочий стол → <b>Cmd + Shift + N</b> → «ИИ-редактор».</li><li>Открой папку и так же создай три подпапки.</li></ol></div><div class="pane" data-pane="fw"><ol class="steps b-steps"><li>Правый клик на рабочем столе → <b>Создать → Папку</b> → «ИИ-редактор».</li><li>Внутри создай три подпапки.</li></ol></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Подключаем папку к Claude</span>
+<div class="card rv rv"><ol class="steps"><li>Открой <b>приложение</b> Claude на компьютере (не браузер).</li><li>Вверху выбери вкладку <b>Code</b>.</li><li>Внизу выбери среду <b>«Этот компьютер»</b> — это локальный режим.</li><li>Рядом выбери папку <b>«ИИ-редактор»</b> и разреши доступ.</li></ol><div class="prompt"><div class="prompt-top"><span>Проверка</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Покажи, какие папки и файлы ты видишь в этой папке.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Всегда открывай сессию именно с папкой «ИИ-редактор» — скиллы и гайд по стилю работают только в ней.</span></div><div class="note b"><svg><use href="#info"/></svg><span>Для коротких роликов хватает тарифа <b>Pro</b>. Для длинных видео на 20–40 минут лимитов Pro не хватит — понадобится тариф выше.</span></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="1">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="1-folders" type="button"><span>Папка и три подпапки созданы</span><span class="sw"></span></button><button class="check" data-check="1-conn" type="button"><span>Папка подключена к Claude</span><span class="sw"></span></button><button class="check" data-check="1-see" type="button"><span>Claude видит подпапки</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><span>Готово? Дальше —</span><button class="btn pink" data-go="2" type="button">Шаг 2 · Инструменты <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="2" id="l2">
+  <div class="sec-head"><div class="key num b">02</div><div><span class="kicker">Шаг 2 из 8 · 15–30 минут</span><h2>Инстру<em>менты</em></h2></div></div>
+  <p class="sub">Программы, которыми Claude режет, анимирует и рендерит. <b>Ставим до скиллов.</b></p>
+
+  <div class="block"><span class="step-tag">Что ставим</span>
+<div class="card glass b rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Программа</th><th>Для чего</th></tr><tr><td><b>Remotion</b></td><td>монтаж кодом</td></tr><tr><td><b>HyperFrames</b></td><td>моушн-графика и анимация</td></tr><tr><td><b>FFmpeg</b></td><td>нарезка, склейка, звук</td></tr><tr><td><b>Whisper</b></td><td>голос в текст с таймкодами</td></tr><tr><td><b>yt-dlp</b></td><td>скачивает видео по ссылке</td></tr></table></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Один промпт</span>
+<div class="card glass rv"><div class="tabs" role="tablist"><button class="tab on" data-tab="tm" type="button">Mac</button><button class="tab" data-tab="tw" type="button">Windows</button></div><div class="pane on" data-pane="tm"><div class="prompt"><div class="prompt-top"><span>Инструменты · Mac</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Установи на мой Mac инструменты для видеомонтажа
+и проверь, что каждый работает.
+
+1. Homebrew — менеджер программ для Mac (https://brew.sh),
+   если его ещё нет.
+2. Node.js версии 22 или новее — нужен для Remotion,
+   HyperFrames и скиллов.
+3. Python 3 — нужен для Whisper.
+4. FFmpeg — нарезка, склейка, звук и рендер (https://ffmpeg.org):
+   brew install ffmpeg
+5. yt-dlp — скачивает видео по ссылке (https://github.com/yt-dlp/yt-dlp):
+   brew install yt-dlp
+6. Whisper — расшифровка голоса в текст с таймкодами
+   (https://github.com/openai/whisper).
+   Если есть более быстрая версия для Mac, предложи её.
+7. Remotion — монтаж кодом (https://www.remotion.dev):
+   проверь, что npx create-video работает.
+8. HyperFrames — моушн-графика и анимация
+   (https://github.com/heygen-com/hyperframes):
+   проверь, что npx hyperframes работает.
+
+Перед каждой командой коротко объясняй, что она делает.
+Если что-то уже установлено, не переустанавливай, просто проверь версию.
+Если что-то не ставится, не останавливайся: отметь и иди дальше.
+
+В конце покажи таблицу:
+инструмент | для чего | версия | статус.</pre></div></div><div class="pane" data-pane="tw"><div class="prompt"><div class="prompt-top"><span>Инструменты · Windows</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Подготовь мой Windows-компьютер для видеомонтажа в этом проекте.
+Проверь Node.js 22 или новее, Python 3, FFmpeg, yt-dlp и Whisper.
+Установи недостающее по официальным инструкциям для Windows.
+Homebrew и команды brew не используй.
+
+Проверь доступность инструментов Remotion и HyperFrames.
+Перед каждым действием коротко объясняй, что делаешь.
+Рабочие версии повторно не устанавливай.
+Если нужны мои действия, объясни их пошагово.
+Если установка не удалась, отметь и продолжи остальные проверки.
+
+В конце покажи таблицу:
+инструмент | для чего | версия | статус.
+Не отмечай инструмент рабочим без проверки запуска.</pre></div></div><div class="note b"><svg><use href="#info"/></svg><span>Компьютер попросит пароль — введи его в появившемся окне вручную. Claude пароль не вводит.</span></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="2">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="2-run" type="button"><span>Промпт отправлен</span><span class="sw"></span></button><button class="check" data-check="2-table" type="button"><span>Таблица установки получена</span><span class="sw"></span></button><button class="check" data-check="2-ok" type="button"><span>Ошибок в таблице нет</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="1" type="button">← Шаг 1</button><button class="btn pink" data-go="3" type="button">Шаг 3 · Скиллы <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="3" id="l3">
+  <div class="sec-head"><div class="key num">03</div><div><span class="kicker">Шаг 3 из 8 · 15 минут</span><h2>Ски<em>ллы</em></h2></div></div>
+  <p class="sub">Насмотренность Claude: темп, кадр, анимация, стиль. <b>Сам выбирает нужные.</b></p>
+
+  <div class="block"><span class="step-tag">Главный скилл — montazh</span>
+<div class="card glass rv"><p>Насмотренность Claude: темп, кадр, анимация, стиль. Нужные скиллы он выбирает сам.</p><div class="links"><a class="btn pink dl" href="skills/montazh.skill" download>Скачать montazh.skill <svg><use href="#arrow"/></svg></a></div><div class="tabs" role="tablist"><button class="tab on" data-tab="ms" type="button">Через настройки</button><button class="tab" data-tab="mc" type="button">Через Claude Code</button></div><div class="pane on" data-pane="ms"><ol class="steps"><li>Открой <b>Settings → Skills → Upload skill</b>.</li><li>Перетащи файл <b>montazh.skill</b>.</li><li>Проверь, что скилл появился в списке.</li></ol></div><div class="pane" data-pane="mc"><p>Положи файл в папку «ИИ-редактор» и отправь:</p><div class="prompt"><div class="prompt-top"><span>Установить montazh</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Найди montazh.skill в папке проекта.
+Прочитай его и установи содержащийся скилл в .claude/skills
+этого проекта. Сохрани все необходимые файлы скилла.
+Проверь, что есть SKILL.md, и сообщи, как его использовать.
+Если формат не распознаётся, объясни причину.
+Исходный файл не удаляй.</pre></div></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Все остальные — одним промптом</span>
+<div class="card rv rv"><div class="prompt"><div class="prompt-top"><span>Все скиллы для монтажа и дизайна</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Установи в этот проект все скиллы для видеомонтажа и дизайна.
+Все скиллы клади в папку .claude/skills этого проекта.
+Перед каждой установкой коротко пиши, что это за скилл.
+Если какой-то не ставится, не останавливайся: отметь и иди дальше.
+Если программа установки спрашивает, куда ставить, выбирай
+Claude Code и папку этого проекта.
+
+МОНТАЖ
+1. Remotion: npx skills add remotion-dev/skills
+2. HyperFrames: npx skills add heygen-com/hyperframes
+
+СТИЛЬ APPLE
+3. Apple Video Kit:
+   npx github:csalamida/apple-video-kit init apple-kit
+   затем npm install в папке apple-kit.
+   Скопируй скилл apple-kit/.agents/skills/apple-video-editor
+   в .claude/skills.
+4. Apple Motion:
+   git clone https://github.com/l1ghtk1d/apple-motion
+   скопируй папку skill/apple-motion в .claude/skills.
+5. Liquid Glass:
+   git clone --depth 1 https://github.com/stormaref/LiquidGlassSkill
+   скопируй папку plugins/liquid-glass/skills/liquid-glass в .claude/skills.
+
+ДИЗАЙН
+6. UI/UX Pro Max: npx skills add nextlevelbuilder/ui-ux-pro-max-skill
+7. Taste Skill: npx skills add Leonxlnx/taste-skill
+8. Impeccable: npx skills add pbakaus/impeccable
+9. Hallmark: npx skills add Nutlope/hallmark
+10. Awesome Design MD (это не скилл, а референсы):
+    git clone https://github.com/VoltAgent/awesome-design-md
+    в папку 02_референсы/design-md.
+
+После установки удали временные папки, которые остались
+после копирования скиллов.
+
+В конце покажи таблицу:
+скилл | для чего в монтаже | команда запуска | статус.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>После установки открой <b>новую сессию</b> с той же папкой и введи <b>/</b> — скиллы появятся в списке.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Что делает каждый</span>
+<div class="skills"><div class="skill rv"><span class="tag">Монтаж</span><h4>Remotion</h4><p>Официальный скилл монтажа кодом: сцены, текст, анимация.</p><div class="cmd"><code>npx skills add remotion-dev/skills</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/remotion-dev/skills" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Монтаж</span><h4>HyperFrames</h4><p>Моушн-графика, анимации, переходы и субтитры.</p><div class="cmd"><code>npx skills add heygen-com/hyperframes</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/heygen-com/hyperframes" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Стиль Apple</span><h4>Apple Video Kit</h4><p>Блоки, переходы, зумы и выделения для обучающих роликов.</p><div class="cmd"><code>npx github:csalamida/apple-video-kit init apple-kit</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/csalamida/apple-video-kit" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Стиль Apple</span><h4>Apple Motion</h4><p>Кинетическая типографика и генератор звуков.</p><div class="cmd"><code>git clone https://github.com/l1ghtk1d/apple-motion</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/l1ghtk1d/apple-motion" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Стиль Apple</span><h4>Liquid Glass</h4><p>Стеклянный эффект для плашек, карточек и кнопок.</p><div class="cmd"><code>git clone --depth 1 https://github.com/stormaref/LiquidGlassSkill</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/stormaref/LiquidGlassSkill" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>UI/UX Pro Max</h4><p>База стилей, палитр и шрифтовых пар.</p><div class="cmd"><code>npx skills add nextlevelbuilder/ui-ux-pro-max-skill</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>Taste Skill</h4><p>Насмотренность и меньше шаблонности.</p><div class="cmd"><code>npx skills add Leonxlnx/taste-skill</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/Leonxlnx/taste-skill" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>Impeccable</h4><p>Полирует и упрощает то, что собрал ИИ.</p><div class="cmd"><code>npx skills add pbakaus/impeccable</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/pbakaus/impeccable" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>Hallmark</h4><p>Убирает «нейрослоп», делает аккуратнее.</p><div class="cmd"><code>npx skills add Nutlope/hallmark</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/Nutlope/hallmark" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Референсы</span><h4>Awesome Design MD</h4><p>Дизайн-системы известных брендов как референс.</p><div class="cmd"><code>git clone https://github.com/VoltAgent/awesome-design-md</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/VoltAgent/awesome-design-md" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div></div><div class="note b"><svg><use href="#info"/></svg><span>Скиллы «в стиле Apple» описывают только визуальный язык и не связаны с компанией Apple.</span></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="3">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="3-montazh" type="button"><span>Скилл montazh загружен</span><span class="sw"></span></button><button class="check" data-check="3-all" type="button"><span>Остальные скиллы установлены</span><span class="sw"></span></button><button class="check" data-check="3-slash" type="button"><span>Скиллы видны по /</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="2" type="button">← Шаг 2</button><button class="btn pink" data-go="4" type="button">Шаг 4 · Исходник <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="4" id="l4">
+  <div class="sec-head"><div class="key num b">04</div><div><span class="kicker">Шаг 4 из 8 · 15 минут</span><h2>Исходник <em>и текст</em></h2></div></div>
+  <p class="sub">Что положить в папки и как получить текст. <b>Один ролик — один исходник.</b></p>
+
+  <div class="block"><span class="step-tag">Что положить в папки</span>
+<div class="grid2"><div class="card glass rv"><h3><span class="dot"></span>01_исходники</h3><p>Один ролик — <b>один исходник</b>.</p><div class="tbl-wrap"><table class="tbl"><tr><th>Вариант</th><th>Каким должен быть</th></tr><tr><td><b>Нейроозвучка</b></td><td>аудиофайл из сервиса нейроголоса</td></tr><tr><td><b>Своя озвучка</b></td><td>голос с телефона или микрофона, без пауз и шумов</td></tr><tr><td><b>Готовое видео</b></td><td>без пауз и дублей, без музыки и титров, MP4</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Нейроозвучку Claude может сделать и сам. Хочется выбрать конкретный голос — подключи коннектор сервиса озвучки, например ElevenLabs.</span></div></div><div class="card rv rv"><h3><span class="dot b"></span>02_референсы</h3><ol class="steps b-steps"><li>Скриншоты кадров — ищи в Pinterest.</li><li>Ролики-примеры — свои или других авторов.</li><li>Цвета, шрифты, интерфейсы.</li></ol><div class="pills"><span>kinetic typography</span><span>motion design</span><span>2–5 в одном стиле</span></div></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Транскрипция</span>
+<div class="card glass rv"><div class="prompt"><div class="prompt-top"><span>Транскрипция</span><button class="copy" type="button">Скопировать</button></div>
+<pre>В папке 01_исходники лежит мой исходник.
+
+1. Расшифруй речь через Whisper на русском языке
+   с точными таймкодами по фразам и по словам.
+2. Проверь текст: исправь ошибки распознавания,
+   имена, названия и термины, расставь пунктуацию.
+   Смысл и порядок слов не меняй.
+3. Отметь длинные паузы (больше 1 секунды),
+   слова-паразиты и повторы — не удаляй, просто покажи.
+
+Сохрани в папку 01_исходники:
+— transcript.txt — чистый текст;
+— transcript.srt — субтитры с таймкодами;
+— words.json — таймкоды по каждому слову.
+
+Покажи мне текст с таймкодами по фразам
+и список мест, которые стоит проверить.</pre></div><p>Прочитай текст и проверь имена, названия и термины.</p><div class="prompt"><div class="prompt-top"><span>Правка в тексте</span><button class="copy" type="button">Скопировать</button></div>
+<pre>На 00:12 правильно не «клод код», а Claude Code.
+Исправь во всех файлах транскрипции, сохрани таймкоды.</pre></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="4">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="4-src" type="button"><span>Исходник лежит в 01_исходники</span><span class="sw"></span></button><button class="check" data-check="4-refs" type="button"><span>Референсы лежат в 02_референсы</span><span class="sw"></span></button><button class="check" data-check="4-text" type="button"><span>Текст с таймкодами проверен</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="3" type="button">← Шаг 3</button><button class="btn pink" data-go="5" type="button">Шаг 5 · Стиль <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="5" id="l5">
+  <div class="sec-head"><div class="key num">05</div><div><span class="kicker">Шаг 5 из 8 · 20 минут</span><h2>Твой <em>стиль</em></h2></div></div>
+  <p class="sub">Claude разбирает твои ролики и собирает гайд. <b>Чтобы всё было по-твоему.</b></p>
+
+  <div class="block"><span class="step-tag">Зачем это</span>
+<div class="card glass b rv"><h3><span class="dot"></span>Иначе получится «в стиле Claude»</h3><p>Большинство нейро-роликов выглядят одинаково, потому что стиль никто не задал. Слова тут не помогают: «хочу оранжевый» — а какой? Пластиковый, прозрачный, пушистый? <b>Чем конкретнее задание, тем лучше результат.</b></p><div class="pills"><span>объясняешь один раз</span><span>дальше он монтирует так же</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Выбери способ</span>
+<div class="card glass rv"><p>Claude разбирает ролики и собирает гайд — чтобы всё было <b>по-твоему</b>.</p><div class="tabs" role="tablist"><button class="tab on" data-tab="sr" type="button">Из своих рилсов</button><button class="tab" data-tab="sp" type="button">По картинкам</button></div><div class="pane on" data-pane="sr"><div class="prompt"><div class="prompt-top"><span>Мой стиль монтажа</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Вот ссылки на мои рилсы:
+[ссылка 1]
+[ссылка 2]
+[ссылка 3]
+
+Это мои ролики. Задача: вычленить из них МОЙ фирменный стиль
+монтажа, чтобы дальше монтировать все ролики так же.
+
+Для каждого ролика:
+1. Скачай его через yt-dlp в папку 02_референсы.
+2. Расшифруй речь через Whisper с таймкодами.
+3. Через FFmpeg сохрани кадры каждые 0,5 секунды
+   и внимательно их изучи.
+
+Проанализируй и найди, что повторяется во всех роликах:
+— хук: как я начинаю ролик, что в первые 3 секунды;
+— подача и структура текста;
+— темп: как часто меняются кадры;
+— типографика: шрифты, размеры, цвета, анимация текста;
+— фон, палитра, общая атмосфера;
+— графика, интерфейсы, переходы, приближения;
+— субтитры: стиль, расположение, выделения;
+— sound-дизайн.
+
+Отдели фирменные приёмы, которые есть почти везде,
+от случайных, которые встретились один раз.
+
+Собери из этого гайд «Мой стиль монтажа» и сохрани
+в папку ИИ-редактор как style-guide.md.
+В начале гайда напиши 5 главных правил моего стиля.
+Покажи мне гайд.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Instagram может не отдать видео по ссылке. Тогда скачай рилсы вручную, положи в <code>02_референсы</code> и замени пункт 1 на «мои ролики лежат в папке 02_референсы».</span></div></div><div class="pane" data-pane="sp"><div class="prompt"><div class="prompt-top"><span>Стиль по референсам</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Изучи референсы в папке 02_референсы.
+
+Собери единый гайд по стилю монтажа и сохрани его
+в папку ИИ-редактор как style-guide.md:
+— палитра (HEX), шрифты и размеры текста;
+— композиция кадра и безопасные зоны;
+— как появляется и исчезает текст;
+— переходы, темп смены кадров, приближения;
+— графика, иконки, обработка изображений;
+— звуковые акценты.
+
+Не копируй конкретные кадры буквально.
+Если референсы конфликтуют, выбери самое цельное направление.</pre></div></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Где брать идеи анимаций</span>
+<div class="card rv rv"><p>На сайте <b>Prompt Motion</b> собраны ролики с анимациями и готовыми промптами к ним.</p><ol class="steps b-steps"><li>Выбери анимацию, которая нравится.</li><li>Скопируй промпт.</li><li>Адаптируй под себя: свои слова, цвета и стиль.</li></ol></div>
+  </div>
+  <div class="block"><span class="step-tag">Что получится</span>
+<div class="card rv rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Файл</th><th>Зачем</th></tr><tr><td><b>style-guide.md</b></td><td>гайд по стилю: палитра, шрифты, темп, переходы, звук</td></tr><tr><td><b>5 главных правил</b></td><td>стоят в начале гайда — по ним Claude монтирует каждый ролик</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Нет своих роликов? Как собирать референсы и свой стиль — в <a href="https://katrinivanova0616-sys.github.io/workbook-02/#lesson-1" target="_blank" rel="noopener"><b>воркбуке 02</b></a>.</span></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="5">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="5-refs" type="button"><span>Ролики или картинки переданы Claude</span><span class="sw"></span></button><button class="check" data-check="5-guide" type="button"><span>style-guide.md сохранён</span><span class="sw"></span></button><button class="check" data-check="5-read" type="button"><span>Гайд прочитан и поправлен</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="4" type="button">← Шаг 4</button><button class="btn pink" data-go="7" type="button">Шаг 6 · Сториборд <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="7" id="l7">
+  <div class="sec-head"><div class="key num b">06</div><div><span class="kicker">Шаг 6 из 8 · 20–30 минут</span><h2>Стори<em>борд</em></h2></div></div>
+  <p class="sub">План ролика по секундам. <b>Монтаж только после «утверждаю».</b></p>
+
+  <div class="block"><span class="step-tag">Видео к шагу</span>
+<div class="card glass rv"><figure class="yt"><div class="yt-in"><iframe src="https://www.youtube-nocookie.com/embed/zpsq1wm4cv4" title="Исходник и раскадровка" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><figcaption>Исходник и раскадровка · <a href="https://www.youtube.com/watch?v=zpsq1wm4cv4" target="_blank" rel="noopener">открыть на YouTube ↗</a></figcaption></figure></div>
+  </div>
+  <div class="block"><span class="step-tag">Зачем сториборд</span>
+<div class="card glass b rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Без сториборда</th><th>Со сторибордом</th></tr><tr><td>Claude делает так, как видит сам</td><td>ты заранее утверждаешь каждую сцену</td></tr><tr><td>правишь готовое видео и каждый раз ждёшь рендер 5–10 минут</td><td>правишь картинку — это в разы быстрее</td></tr><tr><td>бесконечные правки</td><td>хороший результат с первого раза</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Чем чаще меняются кадры — тем динамичнее монтаж. В промпте стоит смена акцента каждые 1–2 секунды.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Промпт на сториборд</span>
+<div class="card glass rv"><p>План ролика по секундам. Поправить его <b>в разы быстрее</b>, чем видео.</p><div class="prompt"><div class="prompt-top"><span>Сториборд по таймкодам</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Сделай сториборд ролика по таймкодам.
+
+ИСХОДНИК
+Моя озвучка лежит в папке 01_исходники.
+Расшифруй речь через Whisper с точными таймкодами по словам
+и проверь текст на ошибки.
+
+СТИЛЬ
+— опирайся на style-guide.md и референсы в папке 02_референсы;
+— единый стиль во всём ролике;
+— используй установленные скиллы: Apple Video Kit, Apple Motion,
+  Liquid Glass, HyperFrames, Remotion и дизайнерские;
+— формат 9:16, 1080×1920.
+
+ТАЙМИНГ
+— смена кадра каждые 1–2 секунды, без пауз и разрывов;
+— каждый кадр привязан к конкретной фразе озвучки по таймкоду;
+— сториборд покрывает всю длительность озвучки от первой
+  до последней секунды;
+— один кадр — один главный визуальный акцент.
+
+ЧТО СДЕЛАТЬ
+1. Таблица сцен:
+   № | таймкод (от–до) | фраза озвучки | что в кадре |
+   текст на экране | анимация | переход | звуковой эффект.
+2. Для каждого кадра отрендери картинку в HyperFrames или Remotion
+   в финальном стиле — детально, как готовый монтаж.
+3. Собери все кадры в одну сетку storyboard.png,
+   под каждым кадром подпиши номер, таймкод и короткое описание.
+
+Сохрани таблицу как storyboard.md и картинку storyboard.png
+в папку 02_референсы, затем покажи их мне.
+
+Монтаж не начинай, пока я не подтвержу сториборд.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Несмотря на референсы, допиши в блок «СТИЛЬ» свои слова: цвета, фон, материалы. Например: <b>«белый минимализм, фон с точками, стеклянные карточки, экраны MacBook и iPhone»</b>.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Правки и подтверждение</span>
+<div class="card rv rv"><div class="prompt"><div class="prompt-top"><span>Правка кадров</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Кадры 4 и 9 переделай: крупнее текст, добавь экран iPhone.
+Остальное оставь. Покажи обновлённый storyboard.png.</pre></div><div class="tbl-wrap"><table class="tbl"><tr><th>Проверь</th><th>Как понять</th></tr><tr><td><b>Покрытие</b></td><td>от первой до последней секунды, без разрывов</td></tr><tr><td><b>Текст</b></td><td>читается, без ошибок</td></tr><tr><td><b>Смысл</b></td><td>каждая сцена поддерживает то, что звучит</td></tr><tr><td><b>Стиль</b></td><td>все кадры — одна серия</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Монтаж начинается только после твоего «утверждаю» — оно стоит первой строкой в промпте следующего шага.</span></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="7">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="7-sb" type="button"><span>Сториборд получен</span><span class="sw"></span></button><button class="check" data-check="7-fix" type="button"><span>Правки кадров внесены</span><span class="sw"></span></button><button class="check" data-check="7-ok" type="button"><span>Сториборд устраивает</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="5" type="button">← Шаг 5</button><button class="btn pink" data-go="8" type="button">Шаг 7 · Монтаж <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="8" id="l8">
+  <div class="sec-head"><div class="key num">07</div><div><span class="kicker">Шаг 7 из 8 · 15–30 минут</span><h2>Мон<em>таж</em></h2></div></div>
+  <p class="sub">Один промпт собирает ролик. <b>Без музыки!</b></p>
+
+  <div class="block"><span class="step-tag">Видео к шагу</span>
+<div class="card glass rv"><figure class="yt"><div class="yt-in"><iframe src="https://www.youtube-nocookie.com/embed/l5hn9U6W5_A" title="AI-монтаж" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><figcaption>AI-монтаж · <a href="https://www.youtube.com/watch?v=l5hn9U6W5_A" target="_blank" rel="noopener">открыть на YouTube ↗</a></figcaption></figure></div>
+  </div>
+  <div class="block"><span class="step-tag">Промпт на монтаж</span>
+<div class="card glass rv"><p>Motion design, синхронные субтитры, sound-дизайн. <b>Без музыки.</b></p><div class="prompt"><div class="prompt-top"><span>Монтаж</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Сториборд утверждаю. Начинай монтаж.
+
+Используй скилл montazh, style-guide.md и утверждённый сториборд
+из 02_референсы. Применяй установленные скиллы: Remotion,
+HyperFrames, Liquid Glass и дизайнерские.
+
+СТИЛЬ
+Полностью сохрани стиль утверждённого сториборда:
+те же кадры, цвета, шрифты, композицию и порядок сцен.
+Формат 9:16, 1080×1920.
+
+MOTION DESIGN
+— плавные, точные анимации с мягким easing;
+— появление текста по словам и строкам, с лёгким размытием и сдвигом;
+— стеклянные плашки и карточки, которые выезжают, масштабируются
+  и перестраиваются;
+— анимированная графика: диаграммы, графики роста, счётчики цифр,
+  иконки, прогресс-бары, элементы интерфейса;
+— экраны ноутбука и телефона с живым интерфейсом: курсор, клики,
+  скролл, открытие окон;
+— плавные приближения камеры к важным элементам;
+— переходы: стеклянные шторки, масштабирование, морфинг
+  элементов из кадра в кадр, мягкие свайпы;
+— ощущение супер-диджитального, дорогого продукта.
+
+МОНТАЖ
+— смена кадра каждые 1–2 секунды, точно по таймкодам сториборда;
+— динамичный ритм без пустых пауз;
+— озвучка из 01_исходники: длительность, порядок и смысл не меняй.
+
+ТЕКСТ И СИНХРОНИЗАЦИЯ
+— субтитры строго синхронно с озвучкой, слово в слово;
+— текст на экране появляется точно в момент, когда звучит фраза;
+— все надписи в едином стиле сториборда.
+
+ЗВУК
+— только sound-дизайн: мягкие клики на интерфейсах, свуши
+  на переходах, лёгкие акценты на появлении текста и графики;
+— звуковые эффекты тише голоса, голос всегда главный.
+
+МУЗЫКА — СТРОГО ЗАПРЕЩЕНА.
+Не добавляй никакую музыку, фоновые треки, эмбиент или подложку
+ни при каких обстоятельствах. В ролике только голос и sound-дизайн.
+Перед рендером отдельно проверь, что музыки в ролике нет.
+
+ПРОВЕРКА ПЕРЕД РЕНДЕРОМ
+— синхронизация текста и голоса;
+— нет чёрных, пустых или дёрганых кадров;
+— текст читается, ничего не обрезано;
+— стиль одинаковый во всех сценах.
+
+Рендер: MP4, H.264, 30 fps. Сохрани в 03_экспорт.
+После рендера коротко напиши, что сделано, и подтверди,
+что музыка не добавлена.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Рендер идёт 5–15 минут — это норма. Для горизонтального видео замени формат на <b>16:9, 1920×1080</b>.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Про музыку</span>
+<div class="card rv rv"><h3><span class="dot b"></span>Почему в промпте «без музыки»</h3><p>Трек — дело вкуса, его лучше подобрать под себя.</p><ol class="steps b-steps"><li>Наложи трек после монтажа — прямо в Instagram или в CapCut.</li><li>Или создай в проекте папку <code>04_треки</code>, положи туда музыку и допиши в промпт:</li></ol><div class="prompt"><div class="prompt-top"><span>Со своим треком</span><button class="copy" type="button">Скопировать</button></div>
+<pre>В папке 04_треки лежит музыка, которую я выбираю.
+Возьми трек [название] и подложи под ролик тише голоса.
+Голос всегда главный. Другую музыку не добавляй.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>С этой правкой убери из промпта на монтаж блок «МУЗЫКА — СТРОГО ЗАПРЕЩЕНА», иначе команды будут спорить.</span></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="8">
+    <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="8-run" type="button"><span>Монтаж запущен</span><span class="sw"></span></button><button class="check" data-check="8-mp4" type="button"><span>MP4 лежит в 03_экспорт</span><span class="sw"></span></button><button class="check" data-check="8-nomusic" type="button"><span>Музыки в ролике нет</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="7" type="button">← Шаг 6</button><button class="btn pink" data-go="10" type="button">Шаг 8 · Правки <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="10" id="l10">
+  <div class="sec-head"><div class="key num b">08</div><div><span class="kicker">Шаг 8 из 8 · 15 минут</span><h2>Прав<em>ки</em></h2></div></div>
+  <p class="sub">Называешь время и правку — <b>получаешь новую версию.</b></p>
+
+  <div class="block"><span class="step-tag">Говори с Claude как с монтажёром</span>
+<div class="card glass rv"><ol class="steps"><li>Открой ролик из <code>03_экспорт</code>.</li><li>Посмотри <b>целиком и со звуком</b>.</li><li>Назови <b>время</b> и <b>конкретную правку</b>.</li></ol><div class="prompt"><div class="prompt-top"><span>Правки</span><button class="copy" type="button">Скопировать</button></div>
+<pre>На 00:06–00:09 увеличь заголовок, подними выше,
+сделай появление мягче.
+На 00:12 замени кадр на экран телефона.
+Усиль звуковой акцент при смене сцены.
+Остальное сохрани. Пришли обновлённый MP4.</pre></div><div class="tbl-wrap"><table class="tbl"><tr><th>Плохая правка</th><th>Хорошая правка</th></tr><tr><td>«Сделай красивее»</td><td>«На 00:06 заголовок крупнее и выше»</td></tr><tr><td>«Что-то не так со звуком»</td><td>«На 00:14 звук перехода громче голоса — сделай тише»</td></tr><tr><td>«Переделай всё»</td><td>«Сцены 3 и 5 замени, остальное сохрани»</td></tr></table></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Правки можно наговорить</span>
+<div class="card rv rv"><p>Правки не обязательно печатать. Включи диктовку и скажи обычными словами, что не нравится.</p><div class="prompt"><div class="prompt-top"><span>Пример правки голосом</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Мне не нравится вставка про сайт: покажи его как запись экрана на MacBook.
+Видео с записью экрана лежит в 01_исходники/ekran.mov —
+вставь его примерно с 24-й секунды и обрежь по таймкоду.
+Там, где я говорю про сториборд, покажи наш готовый storyboard.png.
+Остальное не трогай. Пришли обновлённый MP4.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Первый рендер редко идеален. Две-три правки — нормальный путь к финальной версии.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Перед публикацией</span>
+<div class="card rv rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Убери, если есть</th><th>Почему</th></tr><tr><td><b>Стена текста на экране</b></td><td>не читается за секунду</td></tr><tr><td><b>Отскок и пружина на тексте</b></td><td>выглядит как шаблон</td></tr><tr><td><b>Глитч, вспышки, «плёнка»</b></td><td>шаблонные переходы считываются сразу</td></tr><tr><td><b>Звук на каждой склейке</b></td><td>звук должен попадать в событие</td></tr><tr><td><b>Текст под кнопками Reels</b></td><td>важное должно стоять в безопасной зоне</td></tr></table></div><div class="prompt"><div class="prompt-top"><span>Самопроверка</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Посмотри готовый ролик из 03_экспорт как строгий монтажёр.
+Проверь: застывшие кадры дольше 2 секунд, чёрные и пустые кадры,
+обрезанные звуки слов на склейках, субтитры не в такт,
+текст под интерфейсом Reels, чужие шрифты и цвета.
+Назови 3 самые заметные проблемы с таймкодами и исправь их.
+Речь и порядок фраз не меняй.</pre></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="10">
+    <div class="tr-head"><h3>📍 Чек-лист ролика</h3><span class="tr-count"><b>0</b>/5</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="10-voice" type="button"><span>Голос слышно, речь сохранена</span><span class="sw"></span></button><button class="check" data-check="10-subs" type="button"><span>Субтитры совпадают с голосом</span><span class="sw"></span></button><button class="check" data-check="10-safe" type="button"><span>Важное не закрыто интерфейсом Reels</span><span class="sw"></span></button><button class="check" data-check="10-clean" type="button"><span>Нет чёрных и застывших кадров</span><span class="sw"></span></button><button class="check" data-check="10-final" type="button"><span>Финальная версия проверена</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="card glass rv soon"><span class="soon-tag">Готово?</span><h3><span class="dot"></span>Покажи результат</h3><p>Пришли ролик — посмотрю и скажу, что ещё усилить.</p><div class="links"><a class="btn pink" href="https://t.me/kkkkkkkkati" target="_blank" rel="noopener">Отправить ролик в Telegram <svg><use href="#arrow"/></svg></a></div></div>
+
+  <div class="next"><button class="btn" data-go="8" type="button">← Шаг 7</button><button class="btn pink" data-go="11" type="button">Бонус · YouTube <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="11" id="l11">
+  <div class="sec-head"><div class="key num">+</div><div><span class="kicker">Бонус · 30 минут</span><h2>Видео <em>для YouTube</em></h2></div></div>
+  <p class="sub">Голова слева, экран справа. <b>Формат 16:9.</b></p>
+
+  <div class="block"><span class="step-tag">Что получится</span>
+<div class="card glass b rv"><p>Слева <b>говорящая голова</b>, справа <b>запись экрана и анимации</b>.</p><div class="ytl"><div class="ytl-a"><i></i><span>голова · 38%</span></div><div class="ytl-b"><i></i><i class="s"></i><span>экран и анимации · 62%</span></div></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Как разложить файлы</span>
+<div class="card rv rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Файл</th><th>Что это</th></tr><tr><td><code>01_исходники/golova.mp4</code></td><td>говорящая голова, уже смонтирована</td></tr><tr><td><code>01_исходники/ekran/01_papki.mov</code></td><td>записи экрана — по порядку блоков</td></tr><tr><td><code>…/02_claude_code_local.mov</code></td><td>название файла говорит, о чём запись</td></tr><tr><td><code>…/03_instrumenty.mov</code></td><td>и так далее</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Нумеруй записи экрана в том порядке, в каком о них говоришь.</span></div></div>
+  </div>
+  <div class="block"><span class="step-tag">Промпт</span>
+<div class="card glass rv"><div class="prompt"><div class="prompt-top"><span>Видео для YouTube</span><button class="copy" type="button">Скопировать</button></div>
+<pre>Смонтируй обучающее видео для YouTube.
+
+ИСХОДНИКИ
+— 01_исходники/golova.mp4 — говорящая голова, уже смонтирована,
+  это основная дорожка: длительность и звук берутся из неё;
+— 01_исходники/ekran/ — записи экрана, пронумерованы по порядку
+  блоков, название файла говорит, о чём запись.
+
+ЧТО СДЕЛАТЬ
+1. Расшифруй golova.mp4 через Whisper с таймкодами.
+2. Посмотри кадры каждой записи экрана и пойми, что в ней происходит.
+3. Сопоставь записи с фразами по смыслу и по названиям файлов.
+   Покажи мне таблицу: таймкод | фраза | что справа (файл или анимация).
+   Монтаж не начинай, пока я не подтвержу таблицу.
+
+РАСКЛАДКА (после подтверждения)
+— формат 16:9, 1920×1080;
+— слева говорящая голова, примерно 38% ширины;
+— справа запись экрана или анимация, примерно 62% ширины;
+— обе части в карточках со скруглёнными углами,
+  стиль по style-guide.md;
+— на записях экрана делай плавные зумы на то, о чём я говорю,
+  и выделения важных кнопок;
+— где подходящей записи нет — анимация по смыслу фразы;
+— длинные записи (установка, рендер) ускоряй под длину речи
+  и ставь плашку «ускорено».
+
+ЗВУК
+— голос только из golova.mp4, звук записей экрана выключи;
+— лёгкий sound-дизайн на переходах и зумах, тише голоса;
+— музыку не добавляй.
+
+Субтитры не нужны.
+Рендер: MP4, H.264, 30 fps, в 03_экспорт.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Сначала Claude покажет таблицу «таймкод | фраза | что справа». Монтаж начнётся только после твоего подтверждения.</span></div></div>
+  </div>
+  <div class="tracker rv at-end" data-tracker="11">
+    <div class="tr-head"><h3>📍 Трекер бонуса</h3><span class="tr-count"><b>0</b>/3</span></div>
+    <div class="tr-bar"><i></i></div>
+    <div class="checks"><button class="check" data-check="11-files" type="button"><span>Файлы разложены и пронумерованы</span><span class="sw"></span></button><button class="check" data-check="11-table" type="button"><span>Таблица соответствия подтверждена</span><span class="sw"></span></button><button class="check" data-check="11-mp4" type="button"><span>Видео 16:9 готово</span><span class="sw"></span></button></div>
+  </div>
+
+  <div class="next"><button class="btn" data-go="10" type="button">← Шаг 8</button><button class="btn pink" data-go="6" type="button">Словарь <svg><use href="#arrow"/></svg></button></div>
+</section>
+
+<section class="lesson" data-lesson="6" id="l6">
+  <div class="sec-head"><div class="key num b"><svg style="width:26px;height:26px"><use href="#chat"/></svg></div><div><span class="kicker">Папка · 24 слова простым языком</span><h2>Сло<em>варь</em></h2></div></div>
+  <p class="sub">Непонятное слово — <b>ищи его здесь.</b></p>
+
+  <div class="gl-tools">
+    <input class="gl-search" id="glSearch" type="search" placeholder="Найти слово: сториборд, рендер, скилл…" autocomplete="off">
+    <div class="gl-chips"><button class="chip on" data-cat="all" type="button">Все</button><button class="chip" data-cat="база" type="button">Основа</button><button class="chip" data-cat="монтаж" type="button">Монтаж</button><button class="chip" data-cat="code" type="button">Claude Code</button></div>
+  </div>
+  <div class="gloss" id="gloss">
+    <div class="term" data-cat="база"><span class="em">🎞</span><div class="st"><span class="tag">Основа</span><h4>Исходник</h4><p>Файл, с которого начинается ролик: твоя озвучка или видео.</p></div></div>
+    <div class="term" data-cat="база"><span class="em">🎧</span><div class="st"><span class="tag">Основа</span><h4>Транскрипция</h4><p>Перевод голоса в текст с таймкодами.</p></div></div>
+    <div class="term" data-cat="база"><span class="em">⏱</span><div class="st"><span class="tag">Основа</span><h4>Таймкод</h4><p>Точное время в ролике: 00:12 — двенадцатая секунда.</p></div></div>
+    <div class="term" data-cat="база"><span class="em">🗒</span><div class="st"><span class="tag">Основа</span><h4>Сториборд (раскадровка)</h4><p>План ролика по кадрам: что показываем, когда появляется текст, как двигается графика.</p></div></div>
+    <div class="term" data-cat="база"><span class="em">📌</span><div class="st"><span class="tag">Основа</span><h4>Референс</h4><p>Чужой пример стиля: «хочу в таком духе».</p></div></div>
+    <div class="term" data-cat="база"><span class="em">📘</span><div class="st"><span class="tag">Основа</span><h4>Style-guide</h4><p>Файл с описанием стиля ролика: цвета, шрифты, приёмы.</p></div></div>
+    <div class="term" data-cat="база"><span class="em">📲</span><div class="st"><span class="tag">Основа</span><h4>Формат 9:16</h4><p>1080×1920 px. Вертикальный ролик для Reels, Shorts и TikTok.</p></div></div>
+    <div class="term" data-cat="база"><span class="em">🛟</span><div class="st"><span class="tag">Основа</span><h4>Безопасная зона</h4><p>Часть кадра, которую не закрывают кнопки и подпись Reels. Важное ставим туда.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">✂️</span><div class="st"><span class="tag b">Монтаж</span><h4>Склейка</h4><p>Место, где один кусок видео стыкуется с другим.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">💬</span><div class="st"><span class="tag b">Монтаж</span><h4>Субтитры</h4><p>Текст того, что говорят, поверх видео.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">✨</span><div class="st"><span class="tag b">Монтаж</span><h4>Моушн-графика</h4><p>Движущаяся графика: текст, плашки, значки, которые появляются и анимируются.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">🔤</span><div class="st"><span class="tag b">Монтаж</span><h4>Кинетическая типографика</h4><p>Текст, который двигается в такт речи.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">➡️</span><div class="st"><span class="tag b">Монтаж</span><h4>Переход</h4><p>Как одна сцена сменяет другую.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">🔔</span><div class="st"><span class="tag b">Монтаж</span><h4>Sound-дизайн</h4><p>Короткие звуки на появлении текста и смене сцен.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">🎬</span><div class="st"><span class="tag b">Монтаж</span><h4>Рендер</h4><p>Сборка готового видеофайла. Может идти 5–15 минут.</p></div></div>
+    <div class="term" data-cat="монтаж"><span class="em">📦</span><div class="st"><span class="tag b">Монтаж</span><h4>Экспорт</h4><p>Сохранение готового ролика файлом MP4.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">⌨️</span><div class="st"><span class="tag b">Claude Code</span><h4>Вкладка Code</h4><p>Режим Claude, где он работает с файлами на твоём компьютере.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">📁</span><div class="st"><span class="tag b">Claude Code</span><h4>Папка проекта</h4><p>Папка, которую видит Claude. Здесь это «ИИ-редактор».</p></div></div>
+    <div class="term" data-cat="code"><span class="em">⭐</span><div class="st"><span class="tag b">Claude Code</span><h4>Скилл</h4><p>Инструкция «как делать задачу». Ставишь один раз — работает всегда.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">🔗</span><div class="st"><span class="tag b">Claude Code</span><h4>MCP (коннектор)</h4><p>Подключение внешнего сервиса, например Ары для генераций.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">🛠</span><div class="st"><span class="tag b">Claude Code</span><h4>FFmpeg</h4><p>Программа для нарезки, склейки, звука и экспорта видео.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">👂</span><div class="st"><span class="tag b">Claude Code</span><h4>Whisper</h4><p>Программа, которая расшифровывает речь в текст.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">🎛</span><div class="st"><span class="tag b">Claude Code</span><h4>Remotion</h4><p>Инструмент, которым Claude собирает видео кодом.</p></div></div>
+    <div class="term" data-cat="code"><span class="em">🧩</span><div class="st"><span class="tag b">Claude Code</span><h4>HyperFrames</h4><p>Инструмент для анимированных сцен и моушн-графики.</p></div></div>
+  </div>
+  <div class="card glass" id="glEmpty" style="display:none;margin-top:14px"><p>Такого слова пока нет. Напиши мне в Telegram — добавлю.</p></div>
+</section>
+
+<section class="lesson" data-lesson="9" id="l9">
+  <div class="sec-head"><div class="key num"><svg style="width:26px;height:26px"><use href="#bookmark"/></svg></div><div><span class="kicker">Папка · твои промпты</span><h2>Сохра<em>нённое</em></h2></div></div>
+  <p class="sub">Нажимай <b>флажок</b> на любом промпте — он появится здесь, как «Сохранённое» в Instagram.</p>
+
+  <div id="favList"></div>
+  <div class="card glass rv" id="favEmpty"><h3><span class="dot"></span>Пока пусто</h3><p>Открой любой урок и нажми <b>флажок</b> рядом с кнопкой «Скопировать». Все сохранённые промпты соберутся в этой папке.</p>
+    <div class="links"><button class="btn pink" data-go="8" type="button">К монтажу <svg><use href="#arrow"/></svg></button></div></div>
+</section>
+
+</div>
+
+<!-- FINISH -->
+<section id="finish">
+  <div class="done-card rv">
+    <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="55" class="bg"/><circle cx="65" cy="65" r="55" class="fg" id="ringFg"/></svg><b id="ringTxt">0%</b></div>
+    <div>
+      <h3>Общий трекер</h3>
+      <p id="doneMsg">Включай переключатели в трекере в конце каждого урока — прогресс сохранится в этом браузере.</p>
+      <div class="lesson-bars" id="lessonBars"></div>
+      <div class="links">
+        <button class="btn" id="saveProg" type="button">💾 Сохранить прогресс</button>
+        <button class="btn" id="loadProg" type="button">↺ Восстановить</button>
+        <button class="btn" id="resetDone" type="button">Сбросить</button>
+        <input type="file" id="progFile" accept=".json,application/json" hidden>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HELP -->
+<section id="help">
+  <div class="sec-head"><div class="key num b">?</div><div><span class="kicker">Если что-то не получается</span><h2>Помощь</h2></div></div>
+  <div class="faq rv">
+    <details class="qa"><summary>Нет вкладки Code<span class="pm"></span></summary><p>Она есть в приложении Claude для компьютера и на подписке с доступом к Claude Code. Обнови приложение и проверь тариф.</p></details>
+    <details class="qa"><summary>Claude не видит папку<span class="pm"></span></summary><p>Открой Code → «Этот компьютер» / Local и выбери папку «ИИ-редактор» заново. Разреши доступ к файлам.</p></details>
+    <details class="qa"><summary>Инструмент не установился<span class="pm"></span></summary><p>Попроси: «Покажи, что не установилось, и объясни по шагам, что мне сделать». На Windows команды brew не работают — используй промпт для Windows.</p></details>
+    <details class="qa"><summary>Скилл не виден<span class="pm"></span></summary><p>Открой новую сессию в той же папке и введи /. Если скилла нет — отправь промпт установки ещё раз.</p></details>
+    <details class="qa"><summary>Субтитры не в такт<span class="pm"></span></summary><p>Попроси сверить таймкоды по words.json и пересобрать субтитры. Исходник не меняй.</p></details>
+    <details class="qa"><summary>Рендер идёт очень долго<span class="pm"></span></summary><p>Сборка может идти 5–15 минут. Если дольше — спроси: «На каком шаге ты сейчас и что мешает?»</p></details>
+    <details class="qa"><summary>В ролике чёрные или пустые кадры<span class="pm"></span></summary><p>Обычно не хватает картинки. Попроси назвать таймкоды пустых кадров и чем их заполнить.</p></details>
+    <details class="qa"><summary>Результат не похож на сториборд<span class="pm"></span></summary><p>Назови номера сцен и что не совпало. Правь по одной-две сцены, остальное проси сохранить.</p></details>
+    <details class="qa"><summary>Прогресс пропал<span class="pm"></span></summary><p>Отметки хранятся в браузере. После очистки браузера или на другом устройстве нажми «Восстановить» в общем трекере и выбери сохранённый файл.</p></details>
+  </div>
+  <div class="note"><svg><use href="#heart"/></svg><span>Нет ответа — <a href="https://t.me/kkkkkkkkati" target="_blank" rel="noopener"><b>напиши мне в Telegram</b></a>.</span></div>
+</section>
+
+
+
+<footer>
+  <div class="links" style="justify-content:center">
+    <a class="btn pink" href="https://katrinivanova0616-sys.github.io/workbook-01" target="_blank" rel="noopener">Воркбук 01 · Claude и ChatGPT <svg><use href="#arrow"/></svg></a>
+    <a class="btn blue" href="https://katrinivanova0616-sys.github.io/workbook-02" target="_blank" rel="noopener">Воркбук 02 · AI-дизайн <svg><use href="#arrow"/></svg></a>
+    <a class="btn" href="https://t.me/kkkkkkkkati" target="_blank" rel="noopener">Вопрос — в Telegram</a>
+  </div>
+  <div class="sign">Нейропедалирование</div>
+</footer>
+
+</div>
+
+<nav class="tabbar" aria-label="Быстрая навигация">
+  <a href="#folders" id="tbHome"><svg><use href="#folder"/></svg>Уроки</a>
+  <a href="#l8" data-go="8"><svg><use href="#bolt"/></svg>Монтаж</a>
+  <a href="#l6" data-go="6"><svg><use href="#chat"/></svg>Словарь</a>
+  <a href="#l9" data-go="9"><svg><use href="#bookmark"/></svg>Сохранённое</a>
+  <a href="#finish"><svg><use href="#bolt"/></svg>Трекер</a>
+</nav>
+<button class="key totop" id="totop" type="button" aria-label="Наверх">↑</button>
+<div class="toast" id="toast">Скопировано ♡</div>
+
+<script>
+(function(){
+  var store={get:function(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+  /* copy */
+  var toast=document.getElementById('toast'),tt;
+  function show(m){toast.textContent=m||'Скопировано ♡';toast.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('show')},1400)}
+  function fallback(text){var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta)}
+  function hearts(btn){var r=btn.getBoundingClientRect();for(var i=0;i<6;i++){var h=document.createElement('span');h.className='heart-fly';h.textContent='♥';h.style.left=(r.left+r.width/2-6)+'px';h.style.top=(r.top-4)+'px';h.style.setProperty('--dx',(Math.random()*80-40)+'px');h.style.animationDelay=(i*40)+'ms';document.body.appendChild(h);setTimeout(function(x){x.remove()},1100,h)}}
+  function doCopy(btn){
+    if(!btn.dataset.label)btn.dataset.label=btn.textContent;
+    var box=btn.closest('.prompt')||btn.closest('.cmd');
+    var el=box.querySelector('pre')||box.querySelector('code');
+    var text=el.innerText.trim();
+    var done=function(){btn.classList.add('ok');btn.textContent='Готово ♡';show();hearts(btn);setTimeout(function(){btn.classList.remove('ok');btn.textContent=btn.dataset.label},1400)};
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done,function(){fallback(text);done()})}else{fallback(text);done()}
+  }
+  document.addEventListener('click',function(e){
+    var c=e.target.closest('.copy');if(c){doCopy(c);return}
+    var m=e.target.closest('.more');if(m){var p=m.closest('.prompt');p.classList.toggle('open');m.textContent=p.classList.contains('open')?'Свернуть ↑':'Развернуть ↓';return}
+    var st=e.target.closest('.star');if(st){toggleFav(st.dataset.pid,st);return}
+  });
+
+  /* favorites */
+  var favs=store.get('wb04-favs')||[];
+  function hash(t){var h=0;for(var i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))|0}return 'p'+(h>>>0).toString(36)}
+  var lessonNames={1:'Шаг 1 · Папка',2:'Шаг 2 · Инструменты',3:'Шаг 3 · Скиллы',4:'Шаг 4 · Исходник',5:'Шаг 5 · Стиль',7:'Шаг 6 · Сториборд',8:'Шаг 7 · Монтаж',10:'Шаг 8 · Правки',11:'Бонус · YouTube'};
+  document.querySelectorAll('.lesson:not([data-lesson="9"]) .prompt').forEach(function(pr){
+    var title=(pr.querySelector('.prompt-top span')||{}).textContent||'';
+    var pid=hash(title+'|'+pr.querySelector('pre').textContent.slice(0,80));
+    pr.dataset.pid=pid;
+    var st=document.createElement('button');st.type='button';st.className='star';st.dataset.pid=pid;st.title='Сохранить';st.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4.6L6 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+    var top=pr.querySelector('.prompt-top');top.insertBefore(st,top.querySelector('.copy'));
+  });
+  function renderFavs(){
+    favs=favs.filter(function(id){return document.querySelector('.lesson:not([data-lesson="9"]) .prompt[data-pid="'+id+'"]')});
+    document.querySelectorAll('.star').forEach(function(b){var on=favs.indexOf(b.dataset.pid)>-1;b.classList.toggle('on',on);b.title=on?'Убрать из сохранённого':'Сохранить'});
+    var list=document.getElementById('favList');list.innerHTML='';
+    favs.forEach(function(id){
+      var src=document.querySelector('.lesson:not([data-lesson="9"]) .prompt[data-pid="'+id+'"]');
+      var wrap=document.createElement('div');wrap.className='fav-item';
+      var from=document.createElement('span');from.className='fav-from';from.textContent=lessonNames[src.closest('.lesson').dataset.lesson]||'';
+      var cl=src.cloneNode(true);cl.classList.remove('rv');cl.classList.remove('open');
+      var mb=cl.querySelector('.more');if(mb)mb.textContent='Развернуть ↓';
+      wrap.appendChild(from);wrap.appendChild(cl);list.appendChild(wrap);
+    });
+    document.getElementById('favEmpty').style.display=favs.length?'none':'';
+    var n=favs.length,w=n%10===1&&n%100!==11?'промпт':(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'промпта':'промптов');
+    document.getElementById('favCount').textContent=n+' '+w;
+  }
+  function toggleFav(id,btn){
+    var i=favs.indexOf(id);if(i>-1){favs.splice(i,1)}else{favs.push(id);show('Сохранено — ищи в папке «Сохранённое»')}
+    store.set('wb04-favs',favs);renderFavs();
+  }
+  renderFavs();
+
+  /* tabs */
+  document.querySelectorAll('.tabs').forEach(function(tabs){
+    var card=tabs.parentElement;
+    tabs.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){
+      tabs.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('on',x===t)});
+      card.querySelectorAll(':scope > .pane').forEach(function(p){p.classList.toggle('on',p.dataset.pane===t.dataset.tab)});
+    })});
+  });
+
+  /* payment chooser */
+  var vars=document.getElementById('variants');
+  document.querySelectorAll('.chooser .chip').forEach(function(c){c.addEventListener('click',function(){
+    var on=!c.classList.contains('on');
+    document.querySelectorAll('.chooser .chip').forEach(function(x){x.classList.remove('on')});
+    vars.classList.toggle('picked',on);
+    vars.querySelectorAll('.card').forEach(function(card){card.classList.toggle('pick',on&&card.dataset.var===c.dataset.pick)});
+    if(on){c.classList.add('on')}
+  })});
+
+  /* hero demo switches */
+  document.querySelectorAll('.sw.demo').forEach(function(s,i){setInterval(function(){s.classList.toggle('on')},2600+i*700)});
+
+  /* lessons as folders */
+  var names=['Рабочее место','Сториборд','Монтаж','Проверка','','','Скиллы'];
+  function openLesson(n,scroll){
+    n=String(n);
+    document.querySelectorAll('.lesson').forEach(function(l){l.classList.toggle('on',l.dataset.lesson===n)});
+    document.querySelectorAll('.folder-btn').forEach(function(f){f.classList.toggle('on',f.dataset.go===n)});
+    document.querySelectorAll('#nav a,.tabbar a[data-go]').forEach(function(a){a.classList.toggle('act',a.dataset.go===n)});
+    var th=document.getElementById('tbHome');if(th)th.classList.toggle('act',+n!==6&&+n!==9&&+n!==8);
+    var fc=document.querySelector('#folders .folders'),fo=fc.querySelector('.folder-btn.on');if(fo&&fc.scrollWidth>fc.clientWidth){fc.scrollTo({left:fo.offsetLeft-16,behavior:'smooth'})}
+    store.set('wb04-lesson',n);
+    try{history.replaceState(null,'','#lesson-'+n)}catch(e){}
+    if(scroll){document.getElementById('folders').scrollIntoView({behavior:'smooth',block:'start'})}
+    document.querySelectorAll('.lesson.on .rv').forEach(function(el){el.classList.add('in')});
+  }
+  document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();openLesson(b.dataset.go,true)})});
+  var start=(location.hash.match(/^#(?:lesson-|l)(10|11|[1-9])$/)||[])[1]||store.get('wb04-lesson')||'1';
+  openLesson(start,false);
+
+  /* trackers */
+  var checks=store.get('wb04-checks')||{};
+  var fg=document.getElementById('ringFg'),C=2*Math.PI*55,bars=document.getElementById('lessonBars');
+  [1,2,3,4,5,7,8,10,11].forEach(function(n){
+    var b=document.createElement('button');b.type='button';b.className='lb';b.dataset.go=n;
+    b.innerHTML='<span>'+({1:'01 Папка',2:'02 Инструменты',3:'03 Скиллы',4:'04 Исходник',5:'05 Стиль',7:'06 Сториборд',8:'07 Монтаж',10:'08 Правки',11:'+ YouTube'})[n]+'</span><i><u data-lb="'+n+'"></u></i><em data-lbt="'+n+'">0%</em>';
+    b.addEventListener('click',function(){openLesson(n,true)});bars.appendChild(b);
+  });
+  function paint(){
+    var all=0,doneAll=0;
+    document.querySelectorAll('.tracker').forEach(function(tr){
+      var n=tr.dataset.tracker,items=tr.querySelectorAll('.check'),d=0;
+      items.forEach(function(c){var on=!!checks[c.dataset.check];c.classList.toggle('on',on);c.querySelector('.sw').classList.toggle('on',on);if(on)d++});
+      all+=items.length;doneAll+=d;
+      var pct=Math.round(d/items.length*100);
+      tr.querySelector('.tr-count b').textContent=d;
+      tr.querySelector('.tr-bar i').style.width=pct+'%';
+      tr.classList.toggle('full',d===items.length);
+      var fb=document.querySelector('[data-fbar="'+n+'"]');if(fb)fb.style.width=pct+'%';
+      var fbtn=document.querySelector('.folder-btn[data-go="'+n+'"]');if(fbtn)fbtn.classList.toggle('full',d===items.length);
+      document.querySelector('[data-lb="'+n+'"]').style.width=pct+'%';
+      document.querySelector('[data-lbt="'+n+'"]').textContent=pct+'%';
+    });
+    var p=all?Math.round(doneAll/all*100):0;
+    document.getElementById('cnt').textContent=p+'%';
+    document.getElementById('ringTxt').textContent=p+'%';
+    fg.style.strokeDasharray=C;fg.style.strokeDashoffset=C*(1-p/100);
+    document.getElementById('doneMsg').textContent=p===100?'Воркбук пройден — первый ролик готов ♡':p?'Отмечено шагов: '+doneAll+' из '+all+'. Продолжай ♡':'Включай переключатели в трекере в конце каждого урока — прогресс сохранится в этом браузере.';
+  }
+  document.querySelectorAll('.check').forEach(function(c){c.addEventListener('click',function(){
+    var k=c.dataset.check;checks[k]=!checks[k];store.set('wb04-checks',checks);paint();if(checks[k])hearts(c);
+  })});
+  document.getElementById('resetDone').addEventListener('click',function(){checks={};store.set('wb04-checks',checks);paint()});
+  paint();
+
+
+  /* glossary */
+  var glS=document.getElementById('glSearch'),glCat='all';
+  function glFilter(){var q=glS.value.trim().toLowerCase(),n=0;
+    document.querySelectorAll('#gloss .term').forEach(function(t){var ok=(glCat==='all'||t.dataset.cat===glCat)&&(!q||t.textContent.toLowerCase().indexOf(q)>-1);t.style.display=ok?'':'none';if(ok)n++});
+    document.getElementById('glEmpty').style.display=n?'none':''}
+  glS.addEventListener('input',glFilter);
+  document.querySelectorAll('.gl-chips .chip').forEach(function(c){c.addEventListener('click',function(){glCat=c.dataset.cat;document.querySelectorAll('.gl-chips .chip').forEach(function(x){x.classList.toggle('on',x===c)});glFilter()})});
+
+  /* backup */
+  document.getElementById('saveProg').addEventListener('click',function(){
+    var data={v:1,site:'workbook-04',saved:new Date().toISOString(),checks:store.get('wb04-checks')||{},favs:store.get('wb04-favs')||[],lesson:store.get('wb04-lesson')||'1'};
+    var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    var a=document.createElement('a');a.href=url;a.download='progress-workbook-04.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000);
+  });
+  var pf=document.getElementById('progFile');
+  document.getElementById('loadProg').addEventListener('click',function(){pf.click()});
+  pf.addEventListener('change',function(){
+    var f=pf.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){try{var d=JSON.parse(r.result);if(!d||d.site!=='workbook-04')throw 0;store.set('wb04-checks',d.checks||{});store.set('wb04-favs',d.favs||[]);store.set('wb04-lesson',d.lesson||'1');location.reload()}catch(e){alert('Это не файл прогресса воркбука 04')}};
+    r.readAsText(f);
+  });
+
+  paint();
+  /* reveal */
+  var els=document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+    els.forEach(function(el){io.observe(el)});
+  }else{els.forEach(function(el){el.classList.add('in')})}
+
+  /* scroll progress, active nav, to top */
+  var prog=document.getElementById('prog'),top=document.getElementById('totop');
+  function onScroll(){
+    var h=document.documentElement,max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?h.scrollTop/max*100:0)+'%';
+    top.classList.toggle('show',h.scrollTop>700);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  top.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'})});
+})();
+</script>
+<script>
+(function(){var ed=document.getElementById('ed');if(!ed)return;
+ var hex=document.getElementById('edHex');
+ document.querySelectorAll('#edPal button').forEach(function(b){b.addEventListener('click',function(){
+   document.querySelectorAll('#edPal button').forEach(function(x){x.classList.toggle('on',x===b)});
+   var c=b.style.getPropertyValue('--c').trim();ed.style.setProperty('--acc',c);hex.textContent=c.toUpperCase()})});
+ var dim=document.getElementById('edDim');
+ document.querySelectorAll('#edFnt button').forEach(function(b){b.addEventListener('click',function(){
+   document.querySelectorAll('#edFnt button').forEach(function(x){x.classList.toggle('on',x===b)});
+   var mn=b.dataset.f==='mn';ed.classList.toggle('mn',mn);dim.textContent='заголовок · '+(mn?'Manrope':'Press Start 2P')})});
+ ed.querySelectorAll('[data-toggle]').forEach(function(s){s.addEventListener('click',function(){
+   s.classList.toggle('on');ed.querySelector('[data-layer="'+s.dataset.toggle+'"]').classList.toggle('off',!s.classList.contains('on'))})});
+})();
+</script>
+<script>
+(function(){var pal=document.querySelectorAll('#edPal button');if(pal.length<2||window.innerWidth<721)return;
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+ var touched=false;document.getElementById('ed').addEventListener('pointerdown',function(){touched=true},true);
+ setTimeout(function(){if(!touched)pal[1].click()},3200);setTimeout(function(){if(!touched)pal[0].click()},4700);
+})();
+</script>
+<script>
+(function(){var ed=document.getElementById('ed');if(!ed)return;
+ function fit(){if(window.innerWidth<721){ed.style.removeProperty('--k');return}
+  var h=window.innerHeight;document.documentElement.classList.toggle('short',h<900);
+  var top=ed.getBoundingClientRect().top+window.pageYOffset,bar=ed.querySelector('.ed-bar').offsetHeight;
+  var k=Math.max(.6,Math.min(1,(h-top-bar-18)/540));
+  ed.style.setProperty('--k',k.toFixed(3));ed.style.setProperty('--kt',Math.max(.84,k).toFixed(3));ed.style.setProperty('--kd',Math.max(.8,k).toFixed(3));ed.classList.toggle('tight',k<.8);ed.style.setProperty('--k2',Math.max(.74,k).toFixed(3))}
+ fit();window.addEventListener('resize',fit);window.addEventListener('load',fit);
+})();
+</script>
+<script>
+(function(){var p=document.getElementById('p1');if(!p)return;
+ var cols=['#1e9bff','#ff2e97','#111114','#8a5cff'],ci=0,fm=['9:16','4:5','1:1'],fc=['f916','','f11'],fi=0;
+ var dots=p.querySelectorAll('.g1 .pd i'),fb=p.querySelectorAll('.g2 b'),fl=document.getElementById('p1fmt'),board=p.querySelector('.board');
+ function color(i){ci=i%cols.length;p.style.setProperty('--acc',cols[ci]);dots.forEach(function(d,n){d.classList.toggle('on',n===ci)})}
+ function font(m){p.classList.toggle('mn',m);fb[0].classList.toggle('on',!m);fb[1].classList.toggle('on',m)}
+ function format(i){fi=i%fm.length;p.classList.remove('f916','f11');if(fc[fi])p.classList.add(fc[fi]);fl.textContent=fm[fi]}
+ function sparks(el){var r=el.getBoundingClientRect(),b=p.getBoundingClientRect();
+  for(var i=0;i<10;i++){var s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('class','p1spark');
+   s.innerHTML='<path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0z" fill="currentColor"/>';
+   s.style.left=(r.left-b.left+r.width/2-8)+'px';s.style.top=(r.top-b.top+r.height/2-8)+'px';
+   var a=Math.PI*2*i/10,d=60+Math.random()*50;s.style.setProperty('--sx',Math.cos(a)*d+'px');s.style.setProperty('--sy2',Math.sin(a)*d+'px');
+   p.appendChild(s);setTimeout(function(x){x.remove()},900,s)}}
+ function toast(t){var el=document.getElementById('toast');if(!el)return;el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){el.classList.remove('show')},1500)}
+ var last=0;
+ function act(a,el){p.classList.add('used');last=Date.now();
+  if(a==='color')color(ci+1);
+  else if(a==='font')font(!p.classList.contains('mn'));
+  else if(a==='format')format(fi+1);
+  else if(a==='magic'){sparks(el);board.classList.remove('flip');void board.offsetWidth;board.classList.add('flip');
+   setTimeout(function(){color(ci+1+Math.floor(Math.random()*2));font(Math.random()>.5);format(fi+1)},380);toast('Claude подобрал новый стиль ✦')}}
+ p.querySelectorAll('[data-act]').forEach(function(el){
+  el.addEventListener('click',function(){act(el.dataset.act,el)});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();act(el.dataset.act,el)}})});
+ board.addEventListener('animationend',function(e){if(e.animationName==='p1flip')board.classList.remove('flip')});
+ var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;if(rm)return;
+ setInterval(function(){if(document.hidden||Date.now()-last<7000)return;var b=p.getBoundingClientRect();if(b.bottom<80||b.top>window.innerHeight-80||!b.width)return;color(ci+1)},3400);
+ var raf=0,sx=0,sy=0,drag=false;
+ function start(e){var t=e.touches[0];sx=t.clientX;sy=t.clientY;drag=false}
+ function move(e){var t=e.touches?e.touches[0]:e,b=p.getBoundingClientRect();
+  if(e.touches&&!drag){if(Math.abs(t.clientX-sx)+Math.abs(t.clientY-sy)<12)return;drag=true}
+  var x=((t.clientX-b.left)/b.width-.5)*2,y=((t.clientY-b.top)/b.height-.5)*2;
+  if(raf)return;raf=requestAnimationFrame(function(){raf=0;p.style.setProperty('--mx',Math.max(-1,Math.min(1,x)).toFixed(3));p.style.setProperty('--my',Math.max(-1,Math.min(1,y)).toFixed(3))})}
+ function rest(){p.style.setProperty('--mx',0);p.style.setProperty('--my',0)}
+ p.addEventListener('touchstart',start,{passive:true});p.addEventListener('touchmove',move,{passive:true});p.addEventListener('touchend',rest);p.addEventListener('touchcancel',rest);
+ p.addEventListener('mousemove',move);p.addEventListener('mouseleave',rest);
+ window.addEventListener('scroll',function(){if(window.innerWidth>720)return;var y=Math.min(600,window.pageYOffset);p.style.setProperty('--msc',y.toFixed(0))},{passive:true});
+})();
+</script>
+<script>
+(function(){var box=document.getElementById('rfBox');if(!box)return;var img=box.querySelector('img'),list=[],at=0;
+ function vis(){return [].slice.call(document.querySelectorAll('#l10 .rf-group')).filter(function(g){return !g.hidden}).reduce(function(a,g){return a.concat([].slice.call(g.querySelectorAll('.rf-card')))},[])}
+ function show(i){at=(i+list.length)%list.length;img.src=list[at].dataset.src}
+ document.querySelectorAll('#l10 .rf-card').forEach(function(c){c.addEventListener('click',function(){list=vis();box.hidden=false;document.body.style.overflow='hidden';show(list.indexOf(c))})});
+ function close(){box.hidden=true;document.body.style.overflow=''}
+ box.addEventListener('click',function(e){if(e.target.closest('.prev'))show(at-1);else if(e.target.closest('.next'))show(at+1);else if(e.target!==img)close()});
+ document.addEventListener('keydown',function(e){if(box.hidden)return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')show(at-1);if(e.key==='ArrowRight')show(at+1)});
+ var sx=0;box.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
+ box.addEventListener('touchend',function(e){var d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50)show(at+(d<0?1:-1))});
+ var gs=document.querySelectorAll('#l10 .rf-group'),st=document.querySelectorAll('#l10 .rf-stack'),tools=document.getElementById('rfTools'),hint=document.getElementById('rfHint');
+ function open(id){gs.forEach(function(g){g.hidden=!(id==='all'||g.dataset.rf===id)});st.forEach(function(x){x.classList.toggle('on',x.dataset.rf===id)});
+  tools.hidden=false;hint.hidden=true;var t=id==='all'?gs[0]:document.querySelector('#l10 .rf-group[data-rf="'+id+'"]');
+  setTimeout(function(){window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-90,behavior:'smooth'})},60)}
+ st.forEach(function(x){x.addEventListener('click',function(){open(x.dataset.rf)})});
+ document.getElementById('rfAll').addEventListener('click',function(){open('all')});
+ document.getElementById('rfBack').addEventListener('click',function(){gs.forEach(function(g){g.hidden=true});st.forEach(function(x){x.classList.remove('on')});tools.hidden=true;hint.hidden=false;
+  document.querySelector('#l10 .rf-board').scrollIntoView({behavior:'smooth',block:'center'})});
+ if(window.matchMedia&&matchMedia('(hover:none)').matches){var k=0;setInterval(function(){if(!document.getElementById('l10').classList.contains('on'))return;st.forEach(function(x,i){x.classList.toggle('peek',i===k%st.length)});k++},1600)}
+})();
+</script>
+<script>
+(function(){var pre=document.querySelector('#rfUni pre');if(!pre)return;
+ document.addEventListener('click',function(e){var b=e.target.closest('.rf-get');if(!b)return;e.stopPropagation();
+  var t=pre.innerText.trim(),ta=document.createElement('textarea');
+  function done(){var el=document.getElementById('toast');if(el){el.textContent='Промпт скопирован ♡';el.classList.add('show');setTimeout(function(){el.classList.remove('show')},1500)}}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(done,done)}else{ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(x){}ta.remove();done()}},true);
+})();
+</script>
+</body>
+</html>
