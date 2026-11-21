@@ -1417,6 +1417,30 @@ figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);mar
   .cv.lay-m .cv-h .a{font-size:7.2vw!important;padding:14px 14px 11px}.cv.lay-m .cv-h .b{font-size:8vw!important;margin-left:30px}
   .cv.lay-n .cv-h .a{font-size:6.8vw!important}.cv.lay-n .cv-h .b{font-size:8.4vw!important}.lay-n .cu{font-size:14px}
 }
+
+/* ---- окна вокруг блоков уроков ---- */
+.lesson .block{--fc:#1e9bff;--fs:#e2f3ff;border:2px solid var(--fc);border-radius:26px;background:#fff;overflow:hidden;box-shadow:0 0 0 5px var(--fs),0 18px 40px rgba(40,30,80,.08)}
+.lesson .block:nth-of-type(even){--fc:#ff7cc2;--fs:#ffe3f1}
+.lesson .block>.step-tag{display:flex;align-items:center;gap:0;margin:0;padding:13px 18px 13px 76px;position:relative;background:var(--fs);border-bottom:2px solid var(--fc);font-size:12.5px}
+.lesson .block>.step-tag::before{content:"";position:absolute;left:20px;top:50%;width:11px;height:11px;margin-top:-5.5px;border-radius:50%;background:#ff5f57;box-shadow:17px 0 0 #febc2e,34px 0 0 #28c840}
+.lesson .block>.step-tag::after{content:"";position:absolute;right:18px;top:50%;width:34px;height:8px;margin-top:-4px;border-radius:4px;background:var(--fc);opacity:.35}
+.lesson .block>.card{border:0;box-shadow:none;background:none;border-radius:0;margin:0;padding:20px 22px}
+.lesson .block>.card+.card{border-top:1.5px dashed var(--fs);}
+/* ---- скрины ---- */
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start}
+.shots.one{grid-template-columns:1fr}
+.shot{margin:0;border-radius:16px;overflow:hidden;background:#fff;border:1.5px solid rgba(12,12,16,.1);box-shadow:0 12px 26px rgba(40,30,80,.12);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.shot:hover{transform:translateY(-3px);box-shadow:0 20px 36px rgba(40,30,80,.16)}
+.shot-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:#f1f1f5;border-bottom:1px solid rgba(12,12,16,.08);font:700 11.5px Manrope,sans-serif;color:#6a6a78}
+.shot-bar i{width:9px;height:9px;border-radius:50%;background:#ff5f57}.shot-bar i:nth-child(2){background:#febc2e}.shot-bar i:nth-child(3){background:#28c840;margin-right:8px}
+.shot-im{display:block;width:100%;padding:0;border:0;background:#fafafc;cursor:zoom-in}
+.shot-im img{display:block;width:100%;height:auto}
+.shot figcaption{padding:11px 14px 13px;border-top:1px solid rgba(12,12,16,.07);font:600 13.5px/1.4 Manrope,sans-serif;color:var(--ink-2)}
+.shot figcaption b{font:400 9px var(--pixel);color:var(--fc,#1e9bff);margin-right:8px}
+.zoom{position:fixed;inset:0;z-index:999;display:none;place-items:center;padding:18px;background:rgba(12,12,16,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);cursor:zoom-out}
+.zoom.on{display:grid}
+.zoom img{max-width:100%;max-height:100%;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+@media (max-width:720px){.lesson .block{border-radius:22px;box-shadow:0 0 0 4px var(--fs)}.lesson .block>.card{padding:16px 14px}.lesson .block>.step-tag{padding-left:70px;font-size:11.5px}}
 </style>
 </head>
 <body>
@@ -1611,10 +1635,12 @@ figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);mar
   </div>
   <div class="block"><span class="step-tag">Структура папки</span>
 <div class="card glass rv"><p>Монтажный стол для Claude — всё в одном месте.</p><div class="tbl-wrap"><table class="tbl"><tr><th>Папка</th><th>Что в ней</th></tr><tr><td><code>01_исходники</code></td><td>озвучка, видео, картинки</td></tr><tr><td><code>02_референсы</code></td><td>примеры стиля, сториборд</td></tr><tr><td><code>03_экспорт</code></td><td>готовые ролики</td></tr></table></div><div class="tabs" role="tablist"><button class="tab on" data-tab="fm" type="button">Mac</button><button class="tab" data-tab="fw" type="button">Windows</button></div><div class="pane on" data-pane="fm"><ol class="steps"><li>Кликни на рабочий стол → <b>Cmd + Shift + N</b> → «ИИ-редактор».</li><li>Открой папку и так же создай три подпапки.</li></ol></div><div class="pane" data-pane="fw"><ol class="steps b-steps"><li>Правый клик на рабочем столе → <b>Создать → Папку</b> → «ИИ-редактор».</li><li>Внутри создай три подпапки.</li></ol></div></div>
+<div class="card"><div class="shots one"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Finder</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/01-papki.jpg" alt="Папка «ИИ-редактор» и три подпапки внутри."></button><figcaption><b>01</b>Папка «ИИ-редактор» и три подпапки внутри.</figcaption></figure></div></div>
   </div>
   <div class="block"><span class="step-tag">Подключаем папку к Claude</span>
 <div class="card rv rv"><ol class="steps"><li>Открой <b>приложение</b> Claude на компьютере (не браузер).</li><li>Вверху выбери вкладку <b>Code</b>.</li><li>Внизу выбери среду <b>«Этот компьютер»</b> — это локальный режим.</li><li>Рядом выбери папку <b>«ИИ-редактор»</b> и разреши доступ.</li></ol><div class="prompt"><div class="prompt-top"><span>Проверка</span><button class="copy" type="button">Скопировать</button></div>
 <pre>Покажи, какие папки и файлы ты видишь в этой папке.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Всегда открывай сессию именно с папкой «ИИ-редактор» — скиллы и гайд по стилю работают только в ней.</span></div><div class="note b"><svg><use href="#info"/></svg><span>Для коротких роликов хватает тарифа <b>Pro</b>. Для длинных видео на 20–40 минут лимитов Pro не хватит — понадобится тариф выше.</span></div></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude · вкладка Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/01-sreda.jpg" alt="Внизу окна: «Этот компьютер», рядом «Выберите…» — здесь открывается папка."></button><figcaption><b>01</b>Внизу окна: «Этот компьютер», рядом «Выберите…» — здесь открывается папка.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/01-doverie.jpg" alt="Claude спросит, доверять ли папке. Жми «Доверять рабочей области»."></button><figcaption><b>02</b>Claude спросит, доверять ли папке. Жми «Доверять рабочей области».</figcaption></figure></div></div>
   </div>
   <div class="tracker rv at-end" data-tracker="1">
     <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
@@ -1675,6 +1701,7 @@ Homebrew и команды brew не используй.
 В конце покажи таблицу:
 инструмент | для чего | версия | статус.
 Не отмечай инструмент рабочим без проверки запуска.</pre></div></div><div class="note b"><svg><use href="#info"/></svg><span>Компьютер попросит пароль — введи его в появившемся окне вручную. Claude пароль не вводит.</span></div></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/02-prompt.jpg" alt="Промпт вставлен в поле ввода — остаётся отправить."></button><figcaption><b>01</b>Промпт вставлен в поле ввода — остаётся отправить.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/02-plan.jpg" alt="Claude сам составляет план установки и идёт по пунктам."></button><figcaption><b>02</b>Claude сам составляет план установки и идёт по пунктам.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/02-tablica.jpg" alt="В конце — таблица: что поставлено и чем проверено."></button><figcaption><b>03</b>В конце — таблица: что поставлено и чем проверено.</figcaption></figure></div></div>
   </div>
   <div class="tracker rv at-end" data-tracker="2">
     <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
@@ -1738,6 +1765,7 @@ Claude Code и папку этого проекта.
 
 В конце покажи таблицу:
 скилл | для чего в монтаже | команда запуска | статус.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>После установки открой <b>новую сессию</b> с той же папкой и введи <b>/</b> — скиллы появятся в списке.</span></div></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/03-prompt.jpg" alt="Один промпт на все скиллы сразу."></button><figcaption><b>01</b>Один промпт на все скиллы сразу.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/03-ustanovka.jpg" alt="Установка идёт по списку, каждый скилл Claude коротко объясняет."></button><figcaption><b>02</b>Установка идёт по списку, каждый скилл Claude коротко объясняет.</figcaption></figure></div></div>
   </div>
   <div class="block"><span class="step-tag">Что делает каждый</span>
 <div class="skills"><div class="skill rv"><span class="tag">Монтаж</span><h4>Remotion</h4><p>Официальный скилл монтажа кодом: сцены, текст, анимация.</p><div class="cmd"><code>npx skills add remotion-dev/skills</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/remotion-dev/skills" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Монтаж</span><h4>HyperFrames</h4><p>Моушн-графика, анимации, переходы и субтитры.</p><div class="cmd"><code>npx skills add heygen-com/hyperframes</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/heygen-com/hyperframes" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Стиль Apple</span><h4>Apple Video Kit</h4><p>Блоки, переходы, зумы и выделения для обучающих роликов.</p><div class="cmd"><code>npx github:csalamida/apple-video-kit init apple-kit</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/csalamida/apple-video-kit" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Стиль Apple</span><h4>Apple Motion</h4><p>Кинетическая типографика и генератор звуков.</p><div class="cmd"><code>git clone https://github.com/l1ghtk1d/apple-motion</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/l1ghtk1d/apple-motion" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Стиль Apple</span><h4>Liquid Glass</h4><p>Стеклянный эффект для плашек, карточек и кнопок.</p><div class="cmd"><code>git clone --depth 1 https://github.com/stormaref/LiquidGlassSkill</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/stormaref/LiquidGlassSkill" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>UI/UX Pro Max</h4><p>База стилей, палитр и шрифтовых пар.</p><div class="cmd"><code>npx skills add nextlevelbuilder/ui-ux-pro-max-skill</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>Taste Skill</h4><p>Насмотренность и меньше шаблонности.</p><div class="cmd"><code>npx skills add Leonxlnx/taste-skill</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/Leonxlnx/taste-skill" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>Impeccable</h4><p>Полирует и упрощает то, что собрал ИИ.</p><div class="cmd"><code>npx skills add pbakaus/impeccable</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/pbakaus/impeccable" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Дизайн</span><h4>Hallmark</h4><p>Убирает «нейрослоп», делает аккуратнее.</p><div class="cmd"><code>npx skills add Nutlope/hallmark</code><button class="copy" type="button">Копия</button></div><a class="btn pink dl" href="https://github.com/Nutlope/hallmark" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div><div class="skill rv"><span class="tag">Референсы</span><h4>Awesome Design MD</h4><p>Дизайн-системы известных брендов как референс.</p><div class="cmd"><code>git clone https://github.com/VoltAgent/awesome-design-md</code><button class="copy" type="button">Копия</button></div><a class="btn blue dl" href="https://github.com/VoltAgent/awesome-design-md" target="_blank" rel="noopener">GitHub <svg><use href="#arrow"/></svg></a></div></div><div class="note b"><svg><use href="#info"/></svg><span>Скиллы «в стиле Apple» описывают только визуальный язык и не связаны с компанией Apple.</span></div>
@@ -1845,6 +1873,7 @@ Claude Code и папку этого проекта.
   </div>
   <div class="block"><span class="step-tag">Где брать идеи анимаций</span>
 <div class="card rv rv"><p>На сайте <b>Prompt Motion</b> собраны ролики с анимациями и готовыми промптами к ним.</p><ol class="steps b-steps"><li>Выбери анимацию, которая нравится.</li><li>Скопируй промпт.</li><li>Адаптируй под себя: свои слова, цвета и стиль.</li></ol></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>prompt-motion.com</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/05-prompt-motion.jpg" alt="Галерея анимаций, сделанных в Claude."></button><figcaption><b>01</b>Галерея анимаций, сделанных в Claude.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>prompt-motion.com</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/05-kartochka.jpg" alt="У каждой анимации справа готовый промпт — кнопка Copy."></button><figcaption><b>02</b>У каждой анимации справа готовый промпт — кнопка Copy.</figcaption></figure></div></div>
   </div>
   <div class="block"><span class="step-tag">Что получится</span>
 <div class="card rv rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Файл</th><th>Зачем</th></tr><tr><td><b>style-guide.md</b></td><td>гайд по стилю: палитра, шрифты, темп, переходы, звук</td></tr><tr><td><b>5 главных правил</b></td><td>стоят в начале гайда — по ним Claude монтирует каждый ролик</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Нет своих роликов? Как собирать референсы и свой стиль — в <a href="https://katrinivanova0616-sys.github.io/workbook-02/#lesson-1" target="_blank" rel="noopener"><b>воркбуке 02</b></a>.</span></div></div>
@@ -1862,9 +1891,6 @@ Claude Code и папку этого проекта.
   <div class="sec-head"><div class="key num b">06</div><div><span class="kicker">Шаг 6 из 8 · 20–30 минут</span><h2>Стори<em>борд</em></h2></div></div>
   <p class="sub">План ролика по секундам. <b>Монтаж только после «утверждаю».</b></p>
 
-  <div class="block"><span class="step-tag">Видео к шагу</span>
-<div class="card glass rv"><figure class="yt"><div class="yt-in"><iframe src="https://www.youtube-nocookie.com/embed/zpsq1wm4cv4" title="Исходник и раскадровка" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><figcaption>Исходник и раскадровка · <a href="https://www.youtube.com/watch?v=zpsq1wm4cv4" target="_blank" rel="noopener">открыть на YouTube ↗</a></figcaption></figure></div>
-  </div>
   <div class="block"><span class="step-tag">Зачем сториборд</span>
 <div class="card glass b rv"><div class="tbl-wrap"><table class="tbl"><tr><th>Без сториборда</th><th>Со сторибордом</th></tr><tr><td>Claude делает так, как видит сам</td><td>ты заранее утверждаешь каждую сцену</td></tr><tr><td>правишь готовое видео и каждый раз ждёшь рендер 5–10 минут</td><td>правишь картинку — это в разы быстрее</td></tr><tr><td>бесконечные правки</td><td>хороший результат с первого раза</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Чем чаще меняются кадры — тем динамичнее монтаж. В промпте стоит смена акцента каждые 1–2 секунды.</span></div></div>
   </div>
@@ -1904,11 +1930,13 @@ Claude Code и папку этого проекта.
 в папку 02_референсы, затем покажи их мне.
 
 Монтаж не начинай, пока я не подтвержу сториборд.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Несмотря на референсы, допиши в блок «СТИЛЬ» свои слова: цвета, фон, материалы. Например: <b>«белый минимализм, фон с точками, стеклянные карточки, экраны MacBook и iPhone»</b>.</span></div></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/07-prompt.jpg" alt="Промпт на сториборд в поле ввода."></button><figcaption><b>01</b>Промпт на сториборд в поле ввода.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/07-plan.jpg" alt="Claude расшифровывает озвучку, изучает референсы и собирает кадры."></button><figcaption><b>02</b>Claude расшифровывает озвучку, изучает референсы и собирает кадры.</figcaption></figure></div></div>
   </div>
   <div class="block"><span class="step-tag">Правки и подтверждение</span>
 <div class="card rv rv"><div class="prompt"><div class="prompt-top"><span>Правка кадров</span><button class="copy" type="button">Скопировать</button></div>
 <pre>Кадры 4 и 9 переделай: крупнее текст, добавь экран iPhone.
 Остальное оставь. Покажи обновлённый storyboard.png.</pre></div><div class="tbl-wrap"><table class="tbl"><tr><th>Проверь</th><th>Как понять</th></tr><tr><td><b>Покрытие</b></td><td>от первой до последней секунды, без разрывов</td></tr><tr><td><b>Текст</b></td><td>читается, без ошибок</td></tr><tr><td><b>Смысл</b></td><td>каждая сцена поддерживает то, что звучит</td></tr><tr><td><b>Стиль</b></td><td>все кадры — одна серия</td></tr></table></div><div class="note b"><svg><use href="#info"/></svg><span>Монтаж начинается только после твоего «утверждаю» — оно стоит первой строкой в промпте следующего шага.</span></div></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>storyboard.png</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/07-storyboard.jpg" alt="Готовый сториборд: 33 кадра, под каждым таймкод."></button><figcaption><b>01</b>Готовый сториборд: 33 кадра, под каждым таймкод.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>storyboard.png</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/07-storyboard-2.jpg" alt="Листай и проверяй каждый кадр до монтажа."></button><figcaption><b>02</b>Листай и проверяй каждый кадр до монтажа.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/07-podtverzhdenie.jpg" alt="Всё устраивает — «Подтверждаю». Нет — «Есть правки»."></button><figcaption><b>03</b>Всё устраивает — «Подтверждаю». Нет — «Есть правки».</figcaption></figure></div></div>
   </div>
   <div class="tracker rv at-end" data-tracker="7">
     <div class="tr-head"><h3>📍 Трекер шага</h3><span class="tr-count"><b>0</b>/3</span></div>
@@ -1923,9 +1951,6 @@ Claude Code и папку этого проекта.
   <div class="sec-head"><div class="key num">07</div><div><span class="kicker">Шаг 7 из 8 · 15–30 минут</span><h2>Мон<em>таж</em></h2></div></div>
   <p class="sub">Один промпт собирает ролик. <b>Без музыки!</b></p>
 
-  <div class="block"><span class="step-tag">Видео к шагу</span>
-<div class="card glass rv"><figure class="yt"><div class="yt-in"><iframe src="https://www.youtube-nocookie.com/embed/l5hn9U6W5_A" title="AI-монтаж" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><figcaption>AI-монтаж · <a href="https://www.youtube.com/watch?v=l5hn9U6W5_A" target="_blank" rel="noopener">открыть на YouTube ↗</a></figcaption></figure></div>
-  </div>
   <div class="block"><span class="step-tag">Промпт на монтаж</span>
 <div class="card glass rv"><p>Motion design, синхронные субтитры, sound-дизайн. <b>Без музыки.</b></p><div class="prompt"><div class="prompt-top"><span>Монтаж</span><button class="copy" type="button">Скопировать</button></div>
 <pre>Сториборд утверждаю. Начинай монтаж.
@@ -1982,6 +2007,7 @@ MOTION DESIGN
 Рендер: MP4, H.264, 30 fps. Сохрани в 03_экспорт.
 После рендера коротко напиши, что сделано, и подтверди,
 что музыка не добавлена.</pre></div><div class="note b"><svg><use href="#info"/></svg><span>Рендер идёт 5–15 минут — это норма. Для горизонтального видео замени формат на <b>16:9, 1920×1080</b>.</span></div></div>
+<div class="card"><div class="shots"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/08-prompt.jpg" alt="Промпт на монтаж: стиль, моушен, запрет на музыку."></button><figcaption><b>01</b>Промпт на монтаж: стиль, моушен, запрет на музыку.</figcaption></figure><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/08-plan.jpg" alt="План монтажа: субтитры, звуки, таймлайн, проверка, рендер."></button><figcaption><b>02</b>План монтажа: субтитры, звуки, таймлайн, проверка, рендер.</figcaption></figure></div></div>
   </div>
   <div class="block"><span class="step-tag">Про музыку</span>
 <div class="card rv rv"><h3><span class="dot b"></span>Почему в промпте «без музыки»</h3><p>Трек — дело вкуса, его лучше подобрать под себя.</p><ol class="steps b-steps"><li>Наложи трек после монтажа — прямо в Instagram или в CapCut.</li><li>Или создай в проекте папку <code>04_треки</code>, положи туда музыку и допиши в промпт:</li></ol><div class="prompt"><div class="prompt-top"><span>Со своим треком</span><button class="copy" type="button">Скопировать</button></div>
@@ -2009,6 +2035,7 @@ MOTION DESIGN
 На 00:12 замени кадр на экран телефона.
 Усиль звуковой акцент при смене сцены.
 Остальное сохрани. Пришли обновлённый MP4.</pre></div><div class="tbl-wrap"><table class="tbl"><tr><th>Плохая правка</th><th>Хорошая правка</th></tr><tr><td>«Сделай красивее»</td><td>«На 00:06 заголовок крупнее и выше»</td></tr><tr><td>«Что-то не так со звуком»</td><td>«На 00:14 звук перехода громче голоса — сделай тише»</td></tr><tr><td>«Переделай всё»</td><td>«Сцены 3 и 5 замени, остальное сохрани»</td></tr></table></div></div>
+<div class="card"><div class="shots one"><figure class="shot"><div class="shot-bar"><i></i><i></i><i></i>Claude Code</div><button class="shot-im" type="button" aria-label="Увеличить скрин"><img loading="lazy" src="shots/10-pravki.jpg" alt="Настоящая правка: обычными словами, с приложенным файлом и таймкодами."></button><figcaption><b>01</b>Настоящая правка: обычными словами, с приложенным файлом и таймкодами.</figcaption></figure></div></div>
   </div>
   <div class="block"><span class="step-tag">Правки можно наговорить</span>
 <div class="card rv rv"><p>Правки не обязательно печатать. Включи диктовку и скажи обычными словами, что не нравится.</p><div class="prompt"><div class="prompt-top"><span>Пример правки голосом</span><button class="copy" type="button">Скопировать</button></div>
@@ -2523,6 +2550,13 @@ MOTION DESIGN
    raf=requestAnimationFrame(function(){raf=0;stIn.style.setProperty('--mx',x.toFixed(3));stIn.style.setProperty('--my',y.toFixed(3))})});
  cv.addEventListener('mouseleave',function(){stIn.style.setProperty('--mx',0);stIn.style.setProperty('--my',0)});
  var once=false;setTimeout(function(){if(!once&&!timer&&p===0){once=true;play()}},2600);
+})();
+</script>
+<script>
+(function(){var z=document.createElement('div');z.className='zoom';z.innerHTML='<img alt="">';document.body.appendChild(z);
+ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.shot-im');if(b){z.firstChild.src=b.querySelector('img').src;z.classList.add('on');return}
+  if(e.target.closest&&e.target.closest('.zoom'))z.classList.remove('on')});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape')z.classList.remove('on')});
 })();
 </script>
 </body>
