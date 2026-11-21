@@ -1466,16 +1466,36 @@ figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);mar
 .sbx-hint{margin:0 0 14px;font-size:15.5px;font-weight:600;color:var(--ink)}
 @media (max-width:720px){.sbx{grid-template-columns:1fr}.sbx .win{height:400px}}
 /* ---- готовый ролик ---- */
-.fin{display:grid;grid-template-columns:270px minmax(0,1fr);gap:34px;align-items:center}
-.fin-ph{position:relative;width:250px;margin:0 auto;padding:9px;border-radius:40px;background:#111114;box-shadow:0 0 0 2px #2a2a33,0 26px 50px rgba(20,20,60,.28);rotate:-2deg}
-.fin-ph::before{content:"";position:absolute;left:50%;top:18px;width:66px;height:18px;margin-left:-33px;border-radius:12px;background:#111114;z-index:2;pointer-events:none}
-.fin-ph video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:31px;background:#fff}
+.fin{display:grid;grid-template-columns:300px minmax(0,1fr);gap:34px;align-items:center}
+.fin-st{position:relative;display:grid;place-items:center;padding:26px 0 34px}
+.fin-st::before{content:"";position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,124,194,.5),rgba(142,210,255,.35) 60%,transparent);filter:blur(22px)}
+.fin-st::after{content:"";position:absolute;left:50%;bottom:8px;width:190px;height:26px;margin-left:-95px;border-radius:50%;background:radial-gradient(closest-side,rgba(40,30,80,.3),transparent);filter:blur(5px)}
+.fin-ph{position:relative;z-index:1;width:252px;padding:3px;border-radius:50px;rotate:-3deg;
+  background:linear-gradient(135deg,#f4f4f7 0%,#b9bcc6 18%,#e9eaef 38%,#8f93a0 62%,#dcdde3 82%,#a4a7b2 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),0 2px 3px rgba(20,20,40,.25),0 30px 50px rgba(40,30,80,.28);
+  transition:rotate .5s cubic-bezier(.2,.8,.2,1),translate .5s cubic-bezier(.2,.8,.2,1)}
+.fin-ph:hover{rotate:0deg;translate:0 -6px}
+.fin-in{position:relative;border-radius:47px;padding:8px;background:#08080b;box-shadow:inset 0 0 0 1.5px #2b2b33}
+.fin-in video{display:block;width:100%;aspect-ratio:9/19.3;object-fit:cover;border-radius:39px;background:#fff}
+.fin-in::before{content:"";position:absolute;left:50%;top:18px;width:72px;height:21px;margin-left:-36px;border-radius:12px;background:#08080b;z-index:2;pointer-events:none;box-shadow:inset -14px 0 0 -8px #17172a}
+.fin-in::after{content:"";position:absolute;inset:8px;border-radius:39px;pointer-events:none;z-index:2;background:linear-gradient(118deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 22%,transparent 34%)}
+.fin-ph>i{position:absolute;width:3px;border-radius:2px;background:linear-gradient(180deg,#d9dae0,#8f93a0)}
+.fin-ph>i.b1{left:-3px;top:92px;height:20px}.fin-ph>i.b2{left:-3px;top:130px;height:38px}.fin-ph>i.b3{left:-3px;top:178px;height:38px}.fin-ph>i.b4{right:-3px;top:150px;height:62px}
 .fin-t h3{font:800 22px/1.25 Manrope,sans-serif;margin:0 0 10px}
 .fin-t p{margin:0 0 14px;font-size:15.5px;font-weight:600;color:var(--ink-2)}
 .fin-t ul{margin:0;padding:0;list-style:none;display:grid;gap:9px}
 .fin-t li{display:flex;gap:10px;align-items:flex-start;margin:0;font-size:14.5px;font-weight:600;color:var(--ink)}
 .fin-t li::before{content:"✓";flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--fc,#1e9bff);color:#fff;font:800 12px Manrope,sans-serif}
-@media (max-width:720px){.fin{grid-template-columns:1fr;gap:20px}.fin-ph{width:220px;rotate:0deg}}
+@media (max-width:720px){.fin{grid-template-columns:1fr;gap:8px}.fin-ph{width:230px;rotate:0deg}}
+/* ---- старт: ролик + чему научишься ---- */
+.learn.has-v{display:grid;grid-template-columns:270px minmax(0,1fr);gap:8px 30px;align-items:center}
+.learn.has-v>.step-tag{grid-column:1/-1}
+.learn.has-v .learn-g{grid-template-columns:1fr 1fr!important}
+.learn.has-v .fin-st{padding:14px 0 26px}
+.learn.has-v .fin-ph{width:226px}
+.learn-cap{display:block;margin:0 0 12px;font:800 20px/1.25 Manrope,sans-serif;color:var(--ink)}
+.learn-cap small{display:block;margin-top:5px;font:600 14.5px/1.4 Manrope,sans-serif;color:var(--ink-2)}
+@media (max-width:720px){.learn.has-v{grid-template-columns:1fr}.learn.has-v .learn-g{grid-template-columns:1fr 1fr!important}}
 .zoom{position:fixed;inset:0;z-index:999;display:none;place-items:center;padding:18px;background:rgba(12,12,16,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);cursor:zoom-out}
 .zoom.on{display:grid}
 .zoom img{max-width:100%;max-height:100%;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
@@ -1517,7 +1537,7 @@ figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);mar
 <div class="bar"><div class="bar-in">
   <div class="brand">НЕЙРО<em>ПЕДАЛИРОВАНИЕ</em></div>
   <nav class="nav" id="nav">
-    <a href="#l1" data-go="1">Папка</a><a href="#l2" data-go="2">Инструменты</a><a href="#l3" data-go="3">Скиллы</a><a href="#l4" data-go="4">Исходник</a><a href="#l5" data-go="5">Стиль</a><a href="#l7" data-go="7">Сториборд</a><a href="#l8" data-go="8">Монтаж</a><a href="#l10" data-go="10">Правки</a><a href="#l11" data-go="11">YouTube</a><a href="#l6" data-go="6">Словарь</a>
+    <a href="#l1" data-go="1">Подготовка</a><a href="#l2" data-go="2">Инструменты</a><a href="#l3" data-go="3">Скиллы</a><a href="#l4" data-go="4">Исходник</a><a href="#l5" data-go="5">Стиль</a><a href="#l7" data-go="7">Сториборд</a><a href="#l8" data-go="8">Монтаж</a><a href="#l10" data-go="10">Правки</a><a href="#l11" data-go="11">YouTube</a><a href="#l6" data-go="6">Словарь</a>
   </nav>
   <a class="count" href="#finish" title="Общий прогресс"><b id="cnt">0%</b> готово</a>
 </div></div>
@@ -1587,7 +1607,7 @@ figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);mar
     <div class="folders">
       <button class="folder-btn" data-go="1" type="button">
         <span class="ficon"><svg viewBox="0 0 96 78" aria-hidden="true"><use class="fb" href="#fback"/><rect class="paper" x="8" y="13" width="80" height="22" rx="3"/><use class="ff" href="#ffront"/><path class="shine" d="M7 19.6h82"/></svg><svg class="glyph" aria-hidden="true"><use href="#folder"/></svg></span>
-        <span class="flabel">Папка</span><span class="fn">Шаг 01</span>
+        <span class="flabel">Подготовка</span><span class="fn">Шаг 01</span>
         <span class="fbar"><i data-fbar="1"></i></span>
       </button>
       <button class="folder-btn" data-go="2" type="button">
@@ -1651,14 +1671,16 @@ figcaption b{display:block;font:800 14px Manrope,sans-serif;color:var(--ink);mar
   <p class="sub">Монтажный стол для Claude — <b>всё в одном месте.</b></p>
 
 <div id="need" class="need rv">
-  <div class="learn"><span class="step-tag">Чему ты научишься</span>
+  <div class="learn has-v"><span class="step-tag">Чему ты научишься</span>
+    <div class="fin-st"><div class="fin-ph"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><div class="fin-in"><video src="media/gotovyj-rolik.mp4" poster="media/gotovyj-rolik.jpg" controls playsinline preload="none"></video></div></div></div>
+    <div><span class="learn-cap">Вот такой ролик ты соберёшь к концу<small>Нажми и посмотри со звуком — 49 секунд, без монтажной программы.</small></span>
     <div class="learn-g">
       <div class="learn-i"><em>01</em><b>Собрать рабочее место</b><p>Папка, инструменты и скиллы — один раз и надолго.</p></div>
       <div class="learn-i"><em>02</em><b>Задать свой стиль</b><p>Claude разбирает твои ролики и собирает гайд по стилю.</p></div>
       <div class="learn-i"><em>03</em><b>Делать сториборд</b><p>План ролика по секундам, который правится быстрее, чем видео.</p></div>
       <div class="learn-i"><em>04</em><b>Монтировать и править словами</b><p>Один промпт на монтаж, дальше — правки с таймкодами.</p></div>
     </div>
-  </div>
+  </div></div>
   <div class="need-h"><span class="step-tag">Что понадобится</span><p>8 шагов до своего ИИ-монтажёра. Жми «Скопировать» и вставляй в Claude Code.</p></div>
   <div class="need-g need4">
     <div class="need-i"><span class="ne">💻</span><b>Компьютер</b><small>Mac или Windows</small></div>
@@ -2104,7 +2126,7 @@ MOTION DESIGN
   </div>
   <div class="block"><span class="step-tag">Что получилось</span>
 <div class="card"><div class="fin">
-<div class="fin-ph"><video src="media/gotovyj-rolik.mp4" poster="media/gotovyj-rolik.jpg" controls playsinline preload="none"></video></div>
+<div class="fin-st"><div class="fin-ph"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><div class="fin-in"><video src="media/gotovyj-rolik.mp4" poster="media/gotovyj-rolik.jpg" controls playsinline preload="none"></video></div></div></div>
 <div class="fin-t"><h3>Готовый ролик — 49 секунд</h3><p>Собран по шагам этого воркбука: от озвучки до файла в папке «экспорт». Нажми и посмотри со звуком.</p>
 <ul><li>В монтажной программе не открывался ни разу</li><li>Субтитры по словам, синхронно с голосом</li><li>Графика и анимации в одном стиле — по сториборду</li><li>Звуки интерфейса вместо музыки</li></ul></div>
 </div></div>
@@ -2308,7 +2330,7 @@ MOTION DESIGN
   /* favorites */
   var favs=store.get('wb04-favs')||[];
   function hash(t){var h=0;for(var i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))|0}return 'p'+(h>>>0).toString(36)}
-  var lessonNames={1:'Шаг 1 · Папка',2:'Шаг 2 · Инструменты',3:'Шаг 3 · Скиллы',4:'Шаг 4 · Исходник',5:'Шаг 5 · Стиль',7:'Шаг 6 · Сториборд',8:'Шаг 7 · Монтаж',10:'Шаг 8 · Правки',11:'Бонус · YouTube'};
+  var lessonNames={1:'Шаг 1 · Подготовка',2:'Шаг 2 · Инструменты',3:'Шаг 3 · Скиллы',4:'Шаг 4 · Исходник',5:'Шаг 5 · Стиль',7:'Шаг 6 · Сториборд',8:'Шаг 7 · Монтаж',10:'Шаг 8 · Правки',11:'Бонус · YouTube'};
   document.querySelectorAll('.lesson:not([data-lesson="9"]) .prompt').forEach(function(pr){
     var title=(pr.querySelector('.prompt-top span')||{}).textContent||'';
     var pid=hash(title+'|'+pr.querySelector('pre').textContent.slice(0,80));
@@ -2383,7 +2405,7 @@ MOTION DESIGN
   var fg=document.getElementById('ringFg'),C=2*Math.PI*55,bars=document.getElementById('lessonBars');
   [1,2,3,4,5,7,8,10,11].forEach(function(n){
     var b=document.createElement('button');b.type='button';b.className='lb';b.dataset.go=n;
-    b.innerHTML='<span>'+({1:'01 Папка',2:'02 Инструменты',3:'03 Скиллы',4:'04 Исходник',5:'05 Стиль',7:'06 Сториборд',8:'07 Монтаж',10:'08 Правки',11:'+ YouTube'})[n]+'</span><i><u data-lb="'+n+'"></u></i><em data-lbt="'+n+'">0%</em>';
+    b.innerHTML='<span>'+({1:'01 Подготовка',2:'02 Инструменты',3:'03 Скиллы',4:'04 Исходник',5:'05 Стиль',7:'06 Сториборд',8:'07 Монтаж',10:'08 Правки',11:'+ YouTube'})[n]+'</span><i><u data-lb="'+n+'"></u></i><em data-lbt="'+n+'">0%</em>';
     b.addEventListener('click',function(){openLesson(n,true)});bars.appendChild(b);
   });
   function paint(){
